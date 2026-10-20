@@ -1,0 +1,11 @@
+{
+  "name": "@chicolven/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./money": "./src/money.ts",
+    "./types": "./src/types.ts",
+    "./brand": "./src/brand.ts"
+  }
+}

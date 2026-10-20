@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chicolven · TV</title>
+<link rel="icon" href="/player/logo.svg">
+<link rel="stylesheet" href="/player/player.css">
+</head>
+<body>
+<div id="app">
+  <header class="hdr">
+    <img class="hdr-logo" id="logo" src="/player/logo.svg" alt="">
+    <div class="hdr-title"><span class="hdr-bar" id="title-bar"></span><h1 id="title"></h1></div>
+    <div class="hdr-clock"><span id="clock">--:--</span><small id="date"></small></div>
+  </header>
+  <main id="stage"></main>
+  <footer class="ftr">
+    <div class="ftr-rate" id="rate">Cargando tasa…</div>
+    <div class="ftr-ticker"><div class="ticker-track" id="ticker"></div></div>
+    <div class="ftr-status" id="status" title="Conexión"></div>
+  </footer>
+</div>
+<script src="/player/player.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 140" role="img" aria-label="Chicolven">
+  <path d="M10 70 L28 52 L22 28 L46 24 L56 2 L78 14 L100 4 L110 26 L134 30 L128 54 L146 70 L128 86 L134 110 L110 114 L100 136 L78 126 L56 138 L46 116 L22 112 L28 88 Z" fill="#D7191C"/>
+  <circle cx="78" cy="70" r="40" fill="#fff"/>
+  <path d="M58 80 h40 l-6 18 h-28 z" fill="#2F5FD0"/>
+  <path d="M60 78 c4-22 32-30 40-10" stroke="#2F5FD0" stroke-width="5" fill="none"/>
+  <circle cx="68" cy="66" r="9" fill="#8DC63F"/>
+  <circle cx="88" cy="64" r="8" fill="#D7191C"/>
+  <text x="160" y="88" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="64" fill="#fff" textLength="464" lengthAdjust="spacingAndGlyphs">CHICOLVEN</text>
+  <text x="163" y="122" font-family="Arial, sans-serif" font-weight="700" font-size="22" fill="#8DC63F" textLength="300" lengthAdjust="spacing">CHARCUTERÍA</text>
+</svg>
