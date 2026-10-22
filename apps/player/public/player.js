@@ -127,32 +127,113 @@
 
   function renderGrid(slide, display) {
     var cols = Math.max(1, slide.cols);
-    var rows = Math.max(1, slide.rows);
-    var dense = cols >= 4 || rows >= 3;
+    // A last page with few products uses fewer rows so the cards fill the screen.
+    var rows = Math.max(1, Math.min(slide.rows, Math.ceil(slide.items.length / cols)));
     var w = (100 / cols) + '%';
     var h = (100 / rows) + '%';
-    var html = '<div class="grid' + (dense ? ' dense' : '') + '">';
+    var html = '<div class="grid">';
     for (var i = 0; i < slide.items.length; i++) {
       var it = slide.items[i];
+      var delay = 'animation-delay:' + (i * 0.12) + 's;-webkit-animation-delay:' + (i * 0.12) + 's';
+      var later = 'animation-delay:' + (0.35 + i * 0.12) + 's;-webkit-animation-delay:' + (0.35 + i * 0.12) + 's';
+      var floatDelay = 'animation-delay:-' + (i * 0.7) + 's;-webkit-animation-delay:-' + (i * 0.7) + 's';
       html += '<div class="cell" style="width:' + w + ';height:' + h + '">' +
-        '<div class="card' + (it.is_offer ? ' offer' : '') + (it.sold_out ? ' is-soldout' : '') + '" style="animation-delay:' + (i * 0.08) + 's;-webkit-animation-delay:' + (i * 0.08) + 's">' +
-        '<div class="card-img">' + imageHtml(it, slide.color, dense ? '6rem' : '9rem') + '</div>' +
-        '<div class="card-body"><div><div class="card-name">' + esc(it.name) + '</div><div class="unit">por ' + esc(it.unit) + '</div></div>' +
-        '<div class="card-price">' + priceHtml(it, display) + '</div></div>' +
-        sealHtml(it) + soldOutHtml(it) +
+        '<div class="card h' + (it.is_offer ? ' offer' : '') + (it.sold_out ? ' is-soldout' : '') + '" style="' + delay + '">' +
+        '<div class="card-media" style="background-color:' + esc(slide.color) + '">' +
+          '<div class="card-rays"></div><div class="card-glow"></div>' +
+          (it.image
+            ? '<div class="card-photo" style="' + floatDelay + '"><img src="' + esc(it.image) + '" alt=""></div>'
+            : '<div class="ph">' + esc(initials(it.name)) + '</div>') +
+          sealHtml(it) +
+        '</div>' +
+        '<div class="card-info">' +
+          '<div class="card-top">' +
+            '<span class="card-unit" style="' + later + '">Por ' + esc(it.unit) + '</span>' +
+            '<div class="card-name fit" style="' + later + '">' + esc(it.name) + '</div>' +
+          '</div>' +
+          '<div class="card-tag" style="' + later + '">' + priceHtml(it, display) + '<span class="shine" style="' + floatDelay + '"></span></div>' +
+        '</div>' +
+        soldOutHtml(it) +
         '</div></div>';
     }
     return html + '</div>';
+  }
+
+  /*
+   * Responsive pass, run once the slide is in the DOM: size every card from its real cell
+   * (portrait, 720p, 4K, 2x2 or 4x3 all look the same) and shrink long names / prices
+   * until they fit instead of being cut off.
+   */
+  function layoutSlide(el) {
+    var cards = el.getElementsByClassName('card');
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      var cell = card.parentNode;
+      var cw = card.offsetWidth || cell.clientWidth;
+      var ch = card.offsetHeight || cell.clientHeight;
+      if (!cw || !ch) continue;
+      var vertical = cw / ch < 1.2;
+      card.className = card.className.replace(/\b[hv]\b/, vertical ? 'v' : 'h');
+      // Reference design: 640x430 horizontal card -> 20px; 400x520 vertical card -> 20px.
+      var base = vertical ? Math.min(cw / 20, ch / 26) : Math.min(cw / 32, ch / 21.5);
+      card.style.fontSize = base.toFixed(2) + 'px';
+    }
+    var fits = el.getElementsByClassName('fit');
+    for (var j = 0; j < fits.length; j++) fitText(fits[j], 0.45);
+    var mains = el.querySelectorAll('.card-tag .main, .card-tag .sub, .card-tag .old, .hero-price .main, .hero-price .sub');
+    for (var k = 0; k < mains.length; k++) fitWidth(mains[k], mains[k].parentNode.parentNode, 0.4);
+  }
+
+  /** Shrinks an element's font until its content fits its own box (multi-line names). */
+  function fitText(node, minRatio) {
+    node.style.fontSize = '';
+    var start = parseFloat(window.getComputedStyle(node).fontSize);
+    var size = start;
+    // Tight line-heights let accents/descenders poke out a few px; that is not real overflow.
+    while ((node.scrollHeight > node.clientHeight + size * 0.25 || node.scrollWidth > node.clientWidth + 1) && size > start * minRatio) {
+      size *= 0.92;
+      node.style.fontSize = size.toFixed(2) + 'px';
+    }
+  }
+
+  /** Shrinks a single-line element until it is not wider than its container. */
+  function fitWidth(node, container, minRatio) {
+    node.style.fontSize = '';
+    var start = parseFloat(window.getComputedStyle(node).fontSize);
+    var size = start;
+    var cs = window.getComputedStyle(container);
+    var avail = container.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    while (node.scrollWidth > avail + 1 && size > start * minRatio) {
+      size *= 0.92;
+      node.style.fontSize = size.toFixed(2) + 'px';
+    }
+  }
+
+  /* Spotlight: highlights one card after another while a grid slide is on screen. */
+  var spotTimer = null;
+  function startSpotlight(el) {
+    if (spotTimer) clearInterval(spotTimer);
+    spotTimer = null;
+    var cards = el.getElementsByClassName('card');
+    if (cards.length < 2 || (payload && payload.screen.low_power)) return;
+    var i = -1;
+    spotTimer = setInterval(function () {
+      if (i >= 0 && cards[i]) cards[i].className = cards[i].className.replace(' spot', '');
+      i = (i + 1) % cards.length;
+      if (cards[i]) cards[i].className += ' spot';
+    }, 2200);
   }
 
   function renderHero(slide, display, offers) {
     var it = slide.items[0];
     if (!it) return '';
     return '<div class="hero' + (it.sold_out ? ' is-soldout' : '') + '">' +
-      '<div class="hero-img">' + imageHtml(it, slide.color) + soldOutHtml(it) + '</div>' +
+      '<div class="hero-img" style="background-color:' + esc(slide.color) + '"><div class="card-rays"></div><div class="card-glow"></div>' +
+        (it.image ? '<div class="card-photo"><img src="' + esc(it.image) + '" alt=""></div>' : '<div class="ph">' + esc(initials(it.name)) + '</div>') +
+        soldOutHtml(it) + '</div>' +
       '<div class="hero-info">' +
       (offers ? '<div class="offer-flag">¡Oferta!</div>' : '') +
-      '<div class="hero-name">' + esc(it.name) + '</div>' +
+      '<div class="hero-name fit">' + esc(it.name) + '</div>' +
       (it.description ? '<div class="hero-desc">' + esc(it.description) + '</div>' : '') +
       '<div class="unit">Precio por ' + esc(it.unit) + '</div>' +
       '<div class="hero-price">' + priceHtml(it, display) + '</div>' +
@@ -212,6 +293,14 @@
       void h1.offsetWidth; // restart animation
       h1.className = 'swap';
     }
+    // Long category names shrink instead of running into the clock.
+    h1.style.fontSize = '';
+    var size = parseFloat(window.getComputedStyle(h1).fontSize);
+    var min = size * 0.5;
+    while (h1.scrollWidth > h1.clientWidth && size > min) {
+      size *= 0.93;
+      h1.style.fontSize = size.toFixed(2) + 'px';
+    }
     $('title-bar').style.background = color || '#FFD21F';
   }
 
@@ -219,8 +308,11 @@
     var r = renderSlide(slide);
     var el = document.createElement('div');
     el.className = 'slide ' + r.cls + (instant ? ' instant' : '');
-    el.innerHTML = r.html;
+    el.innerHTML = r.html + '<div class="slide-progress" style="animation-duration:' + Math.max(3, slide.duration_s) +
+      's;-webkit-animation-duration:' + Math.max(3, slide.duration_s) + 's"></div>';
     stage.appendChild(el);
+    layoutSlide(el);
+    startSpotlight(el);
     setTitle(slide.type === 'promo' ? (payload.screen.title || payload.store.name) : slide.title,
       slide.type === 'promo' ? '#FFD21F' : slide.color);
 
@@ -244,6 +336,7 @@
 
   function showIdle() {
     if (timer) clearTimeout(timer);
+    if (spotTimer) clearInterval(spotTimer);
     timer = null;
     index = -1;
     stage.innerHTML = '<div class="idle"><img src="' + esc((payload && payload.store.logo) || '/player/logo.svg') + '" alt=""><p>' +
@@ -372,7 +465,10 @@
 
   /* ---------- start ---------- */
 
-  window.addEventListener('resize', fit);
+  window.addEventListener('resize', function () {
+    fit();
+    if (currentEl) layoutSlide(currentEl);
+  });
   fit();
   tickClock();
   setInterval(tickClock, 10000);

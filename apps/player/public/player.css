@@ -46,9 +46,10 @@ body {
   background-size: 2.4rem 1.2rem;
 }
 .hdr-logo { height: 9.5rem; max-width: 36rem; -o-object-fit: contain; object-fit: contain; }
-.hdr-title { -webkit-flex: 1; flex: 1; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding-left: 4rem; min-width: 0; }
+.hdr-title { -webkit-flex: 1; flex: 1; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: 0 3rem 0 4rem; min-width: 0; }
 .hdr-bar { width: 1.2rem; height: 7rem; background: #FFD21F; margin-right: 2.4rem; border-radius: .6rem; }
 .hdr-title h1 {
+  -webkit-flex: 1; flex: 1; min-width: 0;
   font-size: 7rem; line-height: 1; letter-spacing: .1rem; text-transform: uppercase;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 .4rem 0 rgba(0, 0, 0, .25);
 }
@@ -106,54 +107,133 @@ body {
   background-image: linear-gradient(135deg, rgba(255, 255, 255, .18) 0%, rgba(0, 0, 0, .35) 100%);
 }
 
-/* ---------- Grid layout ---------- */
-.grid { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; height: 100%; margin: -1.2rem; }
+/* ---------- Grid layout ----------
+ * Every size inside a card is in em: player.js sets each card's font-size from the real cell
+ * size, so the same design works for 2x2, 3x2, 4x3, portrait, 720p or 4K.
+ * Cards switch between horizontal (.h, photo left) and vertical (.v, photo on top).
+ */
+.grid { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-content: flex-start; align-content: flex-start; height: 100%; margin: -1.2rem; }
 .cell { padding: 1.2rem; }
 .card {
-  position: relative; width: 100%; height: 100%;
+  position: relative; width: 100%; height: 100%; font-size: 2rem;
   display: -webkit-flex; display: flex;
-  background: #fff; color: #0A0A0A; border-radius: 2rem; overflow: hidden;
-  box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, .55);
-  -webkit-animation: cardIn .7s cubic-bezier(.2, .9, .3, 1.2) both; animation: cardIn .7s cubic-bezier(.2, .9, .3, 1.2) both;
+  background: #fff; color: #0A0A0A; border-radius: 1.1em; overflow: hidden;
+  box-shadow: 0 .6em 1.6em rgba(0, 0, 0, .55);
+  -webkit-animation: cardIn .8s cubic-bezier(.2, .9, .3, 1.25) both; animation: cardIn .8s cubic-bezier(.2, .9, .3, 1.25) both;
+  -webkit-transition: -webkit-transform .6s cubic-bezier(.2, .9, .3, 1.3), box-shadow .6s;
+  transition: transform .6s cubic-bezier(.2, .9, .3, 1.3), box-shadow .6s;
 }
-.card-img { width: 42%; height: 100%; -webkit-flex: 0 0 auto; flex: 0 0 auto; background: #eee; overflow: hidden; }
-.card-img img { width: 100%; height: 100%; -o-object-fit: cover; object-fit: cover; }
-.card-body {
-  -webkit-flex: 1; flex: 1; min-width: 0; padding: 2.2rem 2.4rem;
-  display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-justify-content: space-between; justify-content: space-between;
+.card.v { -webkit-flex-direction: column; flex-direction: column; }
+
+/* Photo area: product floats over a spotlight in the category color */
+.card-media { position: relative; -webkit-flex: 0 0 auto; flex: 0 0 auto; overflow: hidden; background-color: #7A0C10; }
+.card.h .card-media { width: 44%; height: 100%; }
+.card.v .card-media { width: 100%; height: 50%; }
+.card-glow {
+  position: absolute; left: -20%; top: -20%; width: 140%; height: 140%;
+  background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, .55) 30%, rgba(255, 255, 255, 0) 62%);
+  -webkit-animation: glowSpin 9s linear infinite; animation: glowSpin 9s linear infinite;
 }
-.card-name { font-size: 3.6rem; line-height: 1.05; text-transform: uppercase; overflow: hidden; max-height: 7.6rem; }
-.card-body .unit { font-size: 2.2rem; color: #2F5FD0; margin-top: .6rem; }
-.card-price { background: #D7191C; margin: 0 -2.4rem -2.2rem; padding: 1.6rem 2.4rem 1.8rem; }
-.card-price .main { font-size: 5.6rem; }
-.card-price .sub { font-size: 2.8rem; margin-top: .6rem; }
-.card-price .old { font-size: 2.2rem; margin-bottom: .4rem; }
-.card .seal { width: 13rem; height: 13rem; font-size: 2rem; top: -1rem; right: -1rem; }
-.card.offer { box-shadow: 0 0 0 .6rem #FFD21F, 0 1.2rem 3rem rgba(0, 0, 0, .55); }
-/* Dense grids (4 columns / 3+ rows) */
-.grid.dense .card { -webkit-flex-direction: column; flex-direction: column; }
-.grid.dense .card-img { width: 100%; height: 42%; }
-.grid.dense .card-name { font-size: 2.6rem; max-height: 5.6rem; }
-.grid.dense .card-body { padding: 1.2rem 1.6rem; }
-.grid.dense .card-body .unit { font-size: 1.6rem; }
-.grid.dense .card-price { margin: 0 -1.6rem -1.2rem; padding: 1rem 1.6rem 1.2rem; }
-.grid.dense .card-price .main { font-size: 3.8rem; }
-.grid.dense .card-price .sub { font-size: 2rem; }
-.grid.dense .card-price .old { font-size: 1.6rem; }
-.grid.dense .seal { width: 9rem; height: 9rem; font-size: 1.4rem; }
+.card-rays {
+  position: absolute; left: 50%; top: 50%; width: 200%; height: 200%; margin: -100% 0 0 -100%; opacity: .16;
+  background: repeating-conic-gradient(from 0deg, #fff 0deg 10deg, transparent 10deg 20deg);
+  -webkit-animation: raysSpin 30s linear infinite; animation: raysSpin 30s linear infinite;
+}
+.card-photo {
+  position: absolute; left: 7%; top: 7%; width: 86%; height: 86%;
+  -webkit-animation: float 4.5s ease-in-out infinite; animation: float 4.5s ease-in-out infinite;
+}
+.card-photo img { width: 100%; height: 100%; -o-object-fit: contain; object-fit: contain; -webkit-filter: drop-shadow(0 .5em .5em rgba(0, 0, 0, .35)); filter: drop-shadow(0 .5em .5em rgba(0, 0, 0, .35)); }
+.card-photo.cover { left: 0; top: 0; width: 100%; height: 100%; -webkit-animation-name: kenburns; animation-name: kenburns; -webkit-animation-duration: 12s; animation-duration: 12s; -webkit-animation-direction: alternate; animation-direction: alternate; }
+.card-photo.cover img { -o-object-fit: cover; object-fit: cover; -webkit-filter: none; filter: none; }
+.card-media .ph { position: relative; background: none; font-size: 4.6em; text-shadow: 0 .06em .12em rgba(0, 0, 0, .3); }
+
+/* Text column */
+.card-info {
+  -webkit-flex: 1; flex: 1; min-width: 0; min-height: 0; position: relative;
+  display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
+}
+.card-top { padding: .8em 1em 0; -webkit-flex: 1; flex: 1; min-height: 0; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+.card.v .card-top { padding: .55em .8em 0; }
+.card-unit {
+  -webkit-align-self: flex-start; align-self: flex-start;
+  font-family: Arial, Helvetica, sans-serif; font-weight: bold; text-transform: uppercase; letter-spacing: .08em;
+  font-size: .72em; color: #fff; background: #2F5FD0; border-radius: 2em; padding: .25em .8em; margin-bottom: .45em;
+  -webkit-animation: slideUp .6s both; animation: slideUp .6s both;
+}
+.card-name {
+  -webkit-flex: 1; flex: 1; min-height: 0; overflow: hidden;
+  font-size: 2.3em; line-height: 1.02; text-transform: uppercase; letter-spacing: -.01em;
+  word-wrap: normal; overflow-wrap: normal; -webkit-hyphens: none; hyphens: none;
+  -webkit-animation: slideUp .6s both; animation: slideUp .6s both;
+}
+
+/* Price ticket */
+.card-tag {
+  position: relative; -webkit-flex: 0 0 auto; flex: 0 0 auto;
+  background: linear-gradient(100deg, #D7191C 0%, #B3121A 100%); color: #fff;
+  padding: .55em 1em .6em 1em; overflow: hidden;
+  -webkit-clip-path: polygon(.7em 0, 100% 0, 100% 100%, 0 100%, 0 .7em);
+  clip-path: polygon(.7em 0, 100% 0, 100% 100%, 0 100%, 0 .7em);
+  -webkit-animation: tagIn .7s cubic-bezier(.2, .9, .3, 1.4) both; animation: tagIn .7s cubic-bezier(.2, .9, .3, 1.4) both;
+}
+.card-tag .price { overflow: hidden; }
+.card-tag .main { font-size: 2.7em; line-height: 1; white-space: nowrap; color: #FFD21F; text-shadow: 0 .05em 0 rgba(0, 0, 0, .25); }
+.card-tag .sub { font-size: 1.15em; margin-top: .15em; white-space: nowrap; }
+.card-tag .old { font-size: .9em; margin-bottom: .1em; white-space: nowrap; }
+.card-tag .shine {
+  position: absolute; top: 0; left: -50%; width: 30%; height: 100%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .45), rgba(255, 255, 255, 0));
+  -webkit-transform: skewX(-20deg); transform: skewX(-20deg);
+  -webkit-animation: shine 4s ease-in-out infinite; animation: shine 4s ease-in-out infinite;
+}
+
+/* Badge sits on the photo corner so it never covers the name */
+.card .seal { width: 4.6em; height: 4.6em; font-size: .78em; top: .5em; left: .5em; right: auto; }
+
+/* Offers: yellow frame that breathes + ticket in yellow */
+.card.offer { box-shadow: 0 0 0 .3em #FFD21F, 0 .6em 1.6em rgba(0, 0, 0, .55); }
+.card.offer:after {
+  content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: 1.1em; pointer-events: none;
+  box-shadow: inset 0 0 0 .3em #FFD21F;
+  -webkit-animation: offerPulse 1.6s ease-in-out infinite; animation: offerPulse 1.6s ease-in-out infinite;
+}
+.card.offer .card-tag { background: linear-gradient(100deg, #FFD21F 0%, #FFB800 100%); color: #0A0A0A; }
+.card.offer .card-tag .main { color: #D7191C; text-shadow: none; }
+.card.offer .card-tag .sub, .card.offer .card-tag .old { color: #0A0A0A; }
+
+/* Spotlight: player.js moves .spot from card to card */
+.card.spot {
+  -webkit-transform: scale(1.045); transform: scale(1.045); z-index: 2;
+  box-shadow: 0 0 0 .25em #fff, 0 1em 2.6em rgba(0, 0, 0, .7);
+}
+.card.offer.spot { box-shadow: 0 0 0 .3em #FFD21F, 0 0 2.4em rgba(255, 210, 31, .6), 0 1em 2.6em rgba(0, 0, 0, .7); }
+.card.spot .card-tag .main { -webkit-animation: pricePop .7s ease-out; animation: pricePop .7s ease-out; }
+
+.card .soldout { font-size: 1.5em; padding: .2em .7em; border-width: .18em; letter-spacing: .1em;
+  -webkit-animation: stampIn .5s .6s cubic-bezier(.2, .9, .3, 1.4) both; animation: stampIn .5s .6s cubic-bezier(.2, .9, .3, 1.4) both; }
+.card.is-soldout .card-media, .card.is-soldout .card-tag { -webkit-filter: grayscale(1); filter: grayscale(1); opacity: .55; }
+
+/* Thin bar that shows how long until the next slide */
+.slide-progress {
+  position: absolute; left: 0; bottom: 0; height: .6rem; width: 100%; background: #FFD21F; z-index: 3;
+  -webkit-transform-origin: 0 0; transform-origin: 0 0; -webkit-transform: scaleX(0); transform: scaleX(0);
+  -webkit-animation-name: progress; animation-name: progress; -webkit-animation-timing-function: linear; animation-timing-function: linear;
+  -webkit-animation-fill-mode: both; animation-fill-mode: both;
+}
 
 /* ---------- Hero layout ---------- */
 .hero { display: -webkit-flex; display: flex; height: 100%; -webkit-align-items: center; align-items: center; }
 .hero-img {
   position: relative; width: 48%; height: 100%; -webkit-flex: 0 0 auto; flex: 0 0 auto;
-  border-radius: 3rem; overflow: hidden; background: #222; box-shadow: 0 2rem 5rem rgba(0, 0, 0, .7);
+  border-radius: 3rem; overflow: hidden; background-color: #7A0C10; box-shadow: 0 2rem 5rem rgba(0, 0, 0, .7);
   -webkit-animation: heroImg 1s ease-out both; animation: heroImg 1s ease-out both;
 }
-.hero-img img { width: 100%; height: 100%; -o-object-fit: cover; object-fit: cover;
-  -webkit-animation: kenburns 14s ease-in-out infinite alternate; animation: kenburns 14s ease-in-out infinite alternate; }
-.hero-img .ph { font-size: 22rem; }
+.hero-img .card-photo img { -webkit-filter: drop-shadow(0 2rem 2rem rgba(0, 0, 0, .4)); filter: drop-shadow(0 2rem 2rem rgba(0, 0, 0, .4)); }
+.hero-img .ph { position: relative; background: none; font-size: 22rem; text-shadow: 0 1rem 2rem rgba(0, 0, 0, .3); }
 .hero-info { -webkit-flex: 1; flex: 1; padding-left: 6rem; min-width: 0; }
 .hero-name {
+  max-height: 3em; overflow: hidden;
   font-size: 9.6rem; line-height: .98; text-transform: uppercase; text-shadow: 0 .6rem 0 rgba(0, 0, 0, .35);
   -webkit-animation: slideUp .8s .15s ease-out both; animation: slideUp .8s .15s ease-out both;
 }
@@ -274,8 +354,8 @@ body {
 .portrait .ftr-rate { font-size: 2.4rem; padding: 0 2rem; }
 
 /* ---------- Animations ---------- */
-@-webkit-keyframes cardIn { from { opacity: 0; -webkit-transform: translateY(4rem) scale(.92); } to { opacity: 1; -webkit-transform: none; } }
-@keyframes cardIn { from { opacity: 0; transform: translateY(4rem) scale(.92); } to { opacity: 1; transform: none; } }
+@-webkit-keyframes cardIn { from { opacity: 0; -webkit-transform: perspective(80em) translateY(25%) rotateX(-35deg) scale(.9); } to { opacity: 1; -webkit-transform: none; } }
+@keyframes cardIn { from { opacity: 0; transform: perspective(80em) translateY(25%) rotateX(-35deg) scale(.9); } to { opacity: 1; transform: none; } }
 @-webkit-keyframes rowIn { from { opacity: 0; -webkit-transform: translateX(4rem); } to { opacity: 1; -webkit-transform: none; } }
 @keyframes rowIn { from { opacity: 0; transform: translateX(4rem); } to { opacity: 1; transform: none; } }
 @-webkit-keyframes slideUp { from { opacity: 0; -webkit-transform: translateY(3rem); } to { opacity: 1; -webkit-transform: none; } }
@@ -303,6 +383,23 @@ body {
 @-webkit-keyframes blink { 50% { opacity: .2; } }
 @keyframes blink { 50% { opacity: .2; } }
 
+@-webkit-keyframes float { 0%, 100% { -webkit-transform: translateY(-3%) rotate(-1.5deg); } 50% { -webkit-transform: translateY(3%) rotate(1.5deg); } }
+@keyframes float { 0%, 100% { transform: translateY(-3%) rotate(-1.5deg); } 50% { transform: translateY(3%) rotate(1.5deg); } }
+@-webkit-keyframes glowSpin { 0% { -webkit-transform: translate(-6%, -4%); } 50% { -webkit-transform: translate(6%, 4%); } 100% { -webkit-transform: translate(-6%, -4%); } }
+@keyframes glowSpin { 0% { transform: translate(-6%, -4%); } 50% { transform: translate(6%, 4%); } 100% { transform: translate(-6%, -4%); } }
+@-webkit-keyframes raysSpin { from { -webkit-transform: rotate(0); } to { -webkit-transform: rotate(360deg); } }
+@keyframes raysSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@-webkit-keyframes tagIn { from { opacity: 0; -webkit-transform: translateX(30%); } to { opacity: 1; -webkit-transform: none; } }
+@keyframes tagIn { from { opacity: 0; transform: translateX(30%); } to { opacity: 1; transform: none; } }
+@-webkit-keyframes pricePop { 0% { -webkit-transform: scale(1); } 40% { -webkit-transform: scale(1.12) rotate(-2deg); } 100% { -webkit-transform: scale(1); } }
+@keyframes pricePop { 0% { transform: scale(1); } 40% { transform: scale(1.12) rotate(-2deg); } 100% { transform: scale(1); } }
+@-webkit-keyframes offerPulse { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+@keyframes offerPulse { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+@-webkit-keyframes stampIn { from { opacity: 0; -webkit-transform: translate(-50%, -50%) rotate(-12deg) scale(2.2); } to { opacity: 1; -webkit-transform: translate(-50%, -50%) rotate(-12deg) scale(1); } }
+@keyframes stampIn { from { opacity: 0; transform: translate(-50%, -50%) rotate(-12deg) scale(2.2); } to { opacity: 1; transform: translate(-50%, -50%) rotate(-12deg) scale(1); } }
+@-webkit-keyframes progress { from { -webkit-transform: scaleX(0); } to { -webkit-transform: scaleX(1); } }
+@keyframes progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
 /* ---------- Low power: no shadows, gradients-in-motion or decorative loops ---------- */
 .low-power #app { background-image: none; }
 .low-power .hdr, .low-power .card, .low-power .hero-img, .low-power .hero-price { box-shadow: none; }
@@ -313,4 +410,9 @@ body {
 .low-power .hero-price, .low-power .hero-img, .low-power .menu-feature, .low-power .promo-title, .low-power .promo-sub {
   -webkit-animation: none; animation: none;
 }
+.low-power .card-glow, .low-power .card-rays, .low-power .card-photo, .low-power .card-tag .shine, .low-power .card.offer:after,
+.low-power .card-tag, .low-power .card-name, .low-power .card-unit, .low-power .card .soldout { -webkit-animation: none; animation: none; }
+.low-power .card-rays, .low-power .card-tag .shine { display: none; }
+.low-power .card-photo img { -webkit-filter: none; filter: none; }
+.low-power .card.spot { -webkit-transform: none; transform: none; }
 .low-power .slide { -webkit-transform: none; transform: none; -webkit-transition: opacity .5s; transition: opacity .5s; }
