@@ -6,4 +6,5 @@ SERVER="${SERVER:-http://localhost:3000}"
 BROWSER="$(command -v chromium || command -v chromium-browser || command -v google-chrome)"
 exec "$BROWSER" --kiosk "$SERVER/tv/$SCREEN" --user-data-dir="$HOME/.chicolven-kiosko/tv$SCREEN" \
   --window-position="$POSX,0" --no-first-run --disable-extensions --disable-translate \
-  --autoplay-policy=no-user-gesture-required --noerrdialogs --disable-session-crashed-bubble
+  --autoplay-policy=no-user-gesture-required --noerrdialogs \
+  --ignore-gpu-blocklist --enable-gpu-rasterization --enable-zero-copy --disable-session-crashed-bubble

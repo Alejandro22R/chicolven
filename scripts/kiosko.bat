@@ -16,4 +16,5 @@ REM Cada pantalla necesita su propio perfil para poder abrir varias ventanas en 
 start "" %BROWSER% --kiosk "%SERVER%/tv/%SCREEN%" --edge-kiosk-type=fullscreen ^
   --user-data-dir="%LOCALAPPDATA%\ChicolvenKiosko\tv%SCREEN%" ^
   --window-position=%POSX%,0 --no-first-run --disable-extensions --disable-translate ^
-  --disable-features=Translate --autoplay-policy=no-user-gesture-required --noerrdialogs --disable-session-crashed-bubble
+  --disable-features=Translate --autoplay-policy=no-user-gesture-required ^
+  --ignore-gpu-blocklist --enable-gpu-rasterization --enable-zero-copy --noerrdialogs --disable-session-crashed-bubble

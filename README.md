@@ -53,6 +53,18 @@ derecha: `scripts\kiosko.bat 2 1920`.
   ofertas relámpago, banners), orientación, segundos por diapositiva y la lista de categorías,
   productos, ofertas o promociones en orden. Lista vacía = todas las categorías.
 
+## Si un TV se ve lento
+
+- El player mide su propia fluidez y, si el TV no alcanza, baja solo a **calidad media**
+  (mantiene transiciones y productos flotando, quita brillos, confeti y sombras) y luego a
+  **baja** (solo fundidos). Lo recuerda en ese TV.
+- Forzar la calidad agregando a la dirección `?calidad=alta`, `?calidad=media` o `?calidad=baja`,
+  por ejemplo `http://IP:3000/tv/1?calidad=media`. Con `?calidad=alta` se vuelve a probar el
+  modo completo.
+- Si el PC envía 4K al televisor, configure esa salida a 1920×1080 en Windows: 4K es 4 veces
+  más trabajo para el navegador.
+- Con Smart TV muy viejos, un TV Box o mini PC con Chrome suele ir mucho más fluido.
+
 ## Tasa BCV
 
 El BCV no tiene una API oficial, así que la tasa se obtiene por capas:

@@ -67,6 +67,58 @@
     xhr.send();
   }
 
+  /* ---------- quality (keeps old TVs fluid) ----------
+   * full: every effect. lite: transitions + floating products only. low: plain fades.
+   * The player measures its own frame rate and steps down by itself when the TV can't keep up;
+   * the choice is remembered on that TV. Force it with ?calidad=alta|media|baja in the URL.
+   */
+  var QUALITY_KEY = 'chicolven.player.quality';
+  var QUALITY_PARAM = { alta: 'full', media: 'lite', baja: 'low' };
+  var forcedQuality = (/[?&]calidad=(alta|media|baja)/.exec(location.search) || [])[1];
+  var quality = forcedQuality ? QUALITY_PARAM[forcedQuality] : (function () {
+    try { return localStorage.getItem(QUALITY_KEY) || 'full'; } catch (e) { return 'full'; }
+  })();
+
+  function effectiveQuality() {
+    return payload && payload.screen.low_power ? 'low' : quality;
+  }
+
+  function setQuality(q) {
+    if (q === quality) return;
+    quality = q;
+    try { localStorage.setItem(QUALITY_KEY, q); } catch (e) { /* ignore */ }
+    fit();
+  }
+
+  /** Samples the frame rate in 5 s windows; two slow windows in a row step the quality down. */
+  function watchFrameRate() {
+    var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+    if (!raf || preview || forcedQuality) return;
+    var frames = 0;
+    var start = Date.now();
+    var slowWindows = 0;
+    function tick() {
+      frames++;
+      var elapsed = Date.now() - start;
+      if (elapsed >= 5000) {
+        var fps = frames * 1000 / elapsed;
+        // Ignore windows where the page was hidden (rAF paused).
+        if (elapsed < 7500) {
+          var limit = quality === 'full' ? 40 : quality === 'lite' ? 24 : 0;
+          slowWindows = fps < limit ? slowWindows + 1 : 0;
+          if (slowWindows >= 2) {
+            slowWindows = 0;
+            setQuality(quality === 'full' ? 'lite' : 'low');
+          }
+        }
+        frames = 0;
+        start = Date.now();
+      }
+      if (quality !== 'low') raf(tick);
+    }
+    raf(tick);
+  }
+
   /* ---------- scaling ---------- */
 
   function fit() {
@@ -90,7 +142,8 @@
       app.style.width = app.style.height = '';
       app.style.transform = app.style.webkitTransform = '';
     }
-    document.body.className = (portrait ? 'portrait' : 'landscape') + (payload && payload.screen.low_power ? ' low-power' : '');
+    var q = effectiveQuality();
+    document.body.className = (portrait ? 'portrait' : 'landscape') + (q === 'low' ? ' low-power' : q === 'lite' ? ' lite' : '');
   }
 
   /* ---------- rendering ---------- */
@@ -215,7 +268,7 @@
     if (spotTimer) clearInterval(spotTimer);
     spotTimer = null;
     var cards = el.getElementsByClassName('card');
-    if (cards.length < 2 || (payload && payload.screen.low_power)) return;
+    if (cards.length < 2 || effectiveQuality() !== 'full') return;
     var i = -1;
     spotTimer = setInterval(function () {
       if (i >= 0 && cards[i]) cards[i].className = cards[i].className.replace(' spot', '');
@@ -381,7 +434,7 @@
       setTitle(title, color);
     };
 
-    if (!old || instant || payload.screen.low_power) {
+    if (!old || instant || effectiveQuality() === 'low') {
       // First slide, instant refresh or low-power mode: simple cross-fade.
       mount();
       setTimeout(function () {
@@ -561,6 +614,7 @@
 
   load();
   connect();
+  watchFrameRate();
   setInterval(load, POLL_MS);
   // Kiosk browsers left on for weeks leak memory; reload once a day at ~4am when online.
   setInterval(function () {
