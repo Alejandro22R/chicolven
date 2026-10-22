@@ -268,12 +268,61 @@
     return html + '</div></div>';
   }
 
+  function logoSrc() {
+    return (payload && payload.store.logo) || '/player/logo.svg';
+  }
+
+  /** Splits a title into words of animated letters (words never break across lines). */
+  function lettersHtml(text) {
+    var words = String(text).split(/\s+/);
+    var html = '';
+    var n = 0;
+    for (var w = 0; w < words.length; w++) {
+      if (!words[w]) continue;
+      html += (html ? ' ' : '') + '<span class="w">';
+      var word = words[w];
+      for (var i = 0; i < word.length; i++) {
+        var ch = word.charAt(i);
+        var code = word.charCodeAt(i);
+        if (code >= 0xD800 && code <= 0xDBFF && i + 1 < word.length) ch += word.charAt(++i); // emoji
+        var d1 = (0.5 + n * 0.045).toFixed(3) + 's';
+        var d2 = (1.4 + n * 0.09).toFixed(3) + 's';
+        html += '<span class="l" style="animation-delay:' + d1 + ',' + d2 + ';-webkit-animation-delay:' + d1 + ',' + d2 + '">' + esc(ch) + '</span>';
+        n++;
+      }
+      html += '</span>';
+    }
+    return html;
+  }
+
+  var CONFETTI_COLORS = ['#FFD21F', '#8DC63F', '#2F5FD0', '#FFFFFF', '#D7191C'];
+  function confettiHtml(count) {
+    var html = '';
+    for (var i = 0; i < count; i++) {
+      var size = 1.2 + (i * 7 % 5) * 0.5;
+      var round = i % 3 === 0 ? 'border-radius:50%;' : '';
+      var dur = (7 + (i * 13 % 7)).toFixed(1);
+      var delay = (-(i * 1.7) % 9).toFixed(1);
+      html += '<span class="cf" style="left:' + ((i * 37) % 100) + '%;width:' + size + 'rem;height:' + (size * (i % 2 ? 1 : 1.8)) + 'rem;' + round +
+        'background:' + CONFETTI_COLORS[i % CONFETTI_COLORS.length] + ';animation-duration:' + dur + 's;-webkit-animation-duration:' + dur +
+        's;animation-delay:' + delay + 's;-webkit-animation-delay:' + delay + 's"></span>';
+    }
+    return html;
+  }
+
   function renderPromo(slide) {
-    return '<div class="promo' + (slide.image ? '' : ' no-img') + '">' +
-      (slide.image ? '<img src="' + esc(slide.image) + '" alt="">' : '') +
-      '<div class="promo-text"><div class="promo-title">' + esc(slide.title) + '</div>' +
-      (slide.subtitle ? '<div class="promo-sub">' + esc(slide.subtitle) + '</div>' : '') +
-      '</div></div>';
+    var title = '<div class="promo-title fit">' + lettersHtml(slide.title) + '</div>' +
+      (slide.subtitle ? '<div class="promo-sub">' + esc(slide.subtitle) + '</div>' : '');
+    if (!slide.image) {
+      // Welcome / announcement without photo: logo, sunburst, confetti and dancing letters.
+      return '<div class="promo no-img"><div class="promo-burst"></div>' + confettiHtml(18) +
+        '<div class="promo-text">' +
+        '<div class="promo-logo"><span class="ring"></span><span class="ring r2"></span><img src="' + esc(logoSrc()) + '" alt=""></div>' +
+        title + '</div></div>';
+    }
+    return '<div class="promo"><img class="promo-photo" src="' + esc(slide.image) + '" alt="">' +
+      '<div class="promo-badge"><img src="' + esc(logoSrc()) + '" alt=""></div>' +
+      '<div class="promo-text">' + title + '</div></div>';
   }
 
   function renderSlide(slide) {
@@ -304,28 +353,60 @@
     $('title-bar').style.background = color || '#FFD21F';
   }
 
+  var wipeCount = 0;
+
+  /** Builds the overlay of brand-colored bands (+ logo) used between slides. */
+  function makeWipe() {
+    var el = document.createElement('div');
+    el.className = 'wipe' + (wipeCount++ % 2 ? ' vert' : '');
+    el.innerHTML = '<div class="wb wb1"></div><div class="wb wb2"></div><div class="wb wb3"></div><div class="wb wb4"></div>' +
+      '<div class="wl"><img src="' + esc(logoSrc()) + '" alt=""></div>';
+    return el;
+  }
+
   function show(slide, instant) {
     var r = renderSlide(slide);
     var el = document.createElement('div');
-    el.className = 'slide ' + r.cls + (instant ? ' instant' : '');
-    el.innerHTML = r.html + '<div class="slide-progress" style="animation-duration:' + Math.max(3, slide.duration_s) +
-      's;-webkit-animation-duration:' + Math.max(3, slide.duration_s) + 's"></div>';
-    stage.appendChild(el);
-    layoutSlide(el);
-    startSpotlight(el);
-    setTitle(slide.type === 'promo' ? (payload.screen.title || payload.store.name) : slide.title,
-      slide.type === 'promo' ? '#FFD21F' : slide.color);
+    el.className = 'slide ' + r.cls;
+    el.innerHTML = r.html;
+    var title = slide.type === 'promo' ? (payload.screen.title || payload.store.name) : slide.title;
+    var color = slide.type === 'promo' ? '#FFD21F' : slide.color;
 
     var old = currentEl;
     currentEl = el;
-    // Next frame: start the enter transition.
+    var mount = function () {
+      stage.appendChild(el);
+      layoutSlide(el);
+      startSpotlight(el);
+      setTitle(title, color);
+    };
+
+    if (!old || instant || payload.screen.low_power) {
+      // First slide, instant refresh or low-power mode: simple cross-fade.
+      mount();
+      setTimeout(function () {
+        el.className += ' active';
+        if (old) {
+          old.className += ' leave';
+          setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 700);
+        }
+      }, 30);
+      return;
+    }
+
+    // Colorful wipe: bands cover the screen, the logo pops, the slide is swapped underneath,
+    // then the bands leave and reveal the new products.
+    var wipe = makeWipe();
+    stage.appendChild(wipe);
+    setTimeout(function () { wipe.className += ' in'; }, 30);
     setTimeout(function () {
-      el.className = el.className.replace(' instant', '') + ' active';
-      if (old) {
-        old.className += ' leave';
-        setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 900);
-      }
-    }, 30);
+      if (old.parentNode) old.parentNode.removeChild(old);
+      el.className += ' active';
+      el.style.transition = el.style.webkitTransition = 'none';
+      mount();
+      wipe.className = wipe.className.replace(' in', ' out');
+      setTimeout(function () { if (wipe.parentNode) wipe.parentNode.removeChild(wipe); }, 900);
+    }, 1150);
   }
 
   function preload(slide) {
@@ -339,7 +420,7 @@
     if (spotTimer) clearInterval(spotTimer);
     timer = null;
     index = -1;
-    stage.innerHTML = '<div class="idle"><img src="' + esc((payload && payload.store.logo) || '/player/logo.svg') + '" alt=""><p>' +
+    stage.innerHTML = '<div class="idle"><img src="' + esc(logoSrc()) + '" alt=""><p>' +
       (payload ? 'Pronto verás nuestros productos aquí' : 'Conectando con el servidor…') + '</p></div>';
     currentEl = null;
     setTitle(payload ? (payload.screen.title || payload.store.name) : 'Chicolven', '#FFD21F');
@@ -361,8 +442,8 @@
   function renderChrome() {
     var p = payload;
     var logo = $('logo');
-    var logoSrc = p.store.logo || '/player/logo.svg';
-    if (logo.getAttribute('src') !== logoSrc) logo.setAttribute('src', logoSrc);
+    var src = logoSrc();
+    if (logo.getAttribute('src') !== src) logo.setAttribute('src', src);
 
     var rateEl = $('rate');
     if (p.rate) {
