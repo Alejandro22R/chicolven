@@ -197,6 +197,7 @@ export function buildPlayerPayload(repos: Repos, screen: Screen, rate: RateInfo 
       transition_logo_scale: settings.transition_logo_scale,
       card_bg_color: settings.card_bg_color,
       card_text_color: settings.card_text_color,
+      card_image_scale: settings.card_image_scale,
       footer_rate_style: settings.footer_rate_style,
     },
     rate,

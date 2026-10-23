@@ -56,7 +56,8 @@ derecha: `scripts\kiosko.bat 2 1920`.
 ## Apariencia de los TVs (desde el panel)
 
 En *Apariencia y precios*, con vista previa: tamaño del logo del encabezado y del logo de la
-transición, colores de la tarjeta de producto (blanca, negra, roja, crema o personalizada),
+transición, color de la franja con el nombre del producto (negra por defecto; blanca, roja, crema
+o personalizada), tamaño de la foto del producto en las tarjetas (barra de 50 % a 150 %),
 estilo del recuadro de la tasa en el pie (rojo, negro o blanco), monedas, redondeo y marquesina.
 
 ## Si un TV se ve lento

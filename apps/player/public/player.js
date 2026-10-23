@@ -508,11 +508,15 @@
     var logoH = 11.5 * hs;
     var wlW = Math.min(100 * ts, portrait ? 100 : 175);
     var wlH = Math.min(46 * ts, 80);
+    // Product photo inside the cards: 86 % of the photo area at 100 %, up to 129 % (it may overflow and gets clipped).
+    var photo = 86 * Math.max(0.5, Math.min(1.5, (theme.card_image_scale || 100) / 100));
     var css =
       '.hdr{height:' + Math.max(13, logoH + 2.4).toFixed(1) + 'rem}' +
       '.hdr-logo{height:' + logoH.toFixed(1) + 'rem;max-width:' + ((portrait ? 32 : 50) * hs).toFixed(1) + 'rem}' +
       '.wl{width:' + wlW.toFixed(1) + 'rem;height:' + wlH.toFixed(1) + 'rem;margin:-' + (wlH / 2).toFixed(1) + 'rem 0 0 -' + (wlW / 2).toFixed(1) + 'rem}' +
-      '.card{background:' + theme.card_bg_color + ';color:' + theme.card_text_color + '}';
+      '.card{background:' + theme.card_bg_color + ';color:' + theme.card_text_color + '}' +
+      '.card .card-photo{width:' + photo.toFixed(1) + '%;height:' + photo.toFixed(1) + '%;left:' + ((100 - photo) / 2).toFixed(1) +
+      '%;top:' + ((100 - photo) / 2).toFixed(1) + '%}';
     var el = $('theme');
     if (!el) {
       el = document.createElement('style');

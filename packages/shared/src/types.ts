@@ -116,6 +116,8 @@ export interface Settings {
   /** Product card text area. */
   card_bg_color: string;
   card_text_color: string;
+  /** Product photo size inside the cards, % of the default. */
+  card_image_scale: number;
   /** Color scheme of the rate box in the footer. */
   footer_rate_style: FooterRateStyle;
 }
@@ -127,6 +129,7 @@ export interface PlayerTheme {
   transition_logo_scale: number;
   card_bg_color: string;
   card_text_color: string;
+  card_image_scale: number;
   footer_rate_style: FooterRateStyle;
 }
 

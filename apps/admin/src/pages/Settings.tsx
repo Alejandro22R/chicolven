@@ -206,9 +206,10 @@ export function SettingsPage() {
         </div>
       </Card>
 
-      <Card title="Tarjetas de producto" icon="box" description="Color del recuadro con el nombre del producto.">
+      <Card title="Tarjetas de producto" icon="box" description="Color de la franja con el nombre del producto y tamaño de la foto.">
         <div class="preview-grid">
           <div>
+            <p class="field-title">Color de la franja del nombre</p>
             <div class="presets">
               {CARD_PRESETS.map((p) => (
                 <button
@@ -236,9 +237,21 @@ export function SettingsPage() {
                 </div>
               </Field>
             </div>
+            <Field label={`Tamaño de la foto del producto: ${s.card_image_scale} %`} hint="Suba la barra para agrandar la foto y bájela para achicarla.">
+              <div class="range-row">
+                <Icon name="image" size={14} />
+                <input type="range" min={50} max={150} step={5} value={s.card_image_scale} onInput={(e) => set('card_image_scale', num(e))} />
+                <Icon name="image" size={22} />
+              </div>
+            </Field>
           </div>
           <div class="mock-card" style={{ background: s.card_bg_color, color: s.card_text_color }}>
-            <div class="mock-photo" />
+            <div class="mock-photo">
+              {/* same geometry as the TV: 86 % of the photo area at 100 % */}
+              <div class="mock-product" style={{ width: `${86 * (s.card_image_scale / 100)}%`, height: `${86 * (s.card_image_scale / 100)}%` }}>
+                <span />
+              </div>
+            </div>
             <div class="mock-info">
               <span class="mock-unit">POR KG</span>
               <b>JAMÓN DE PIERNA</b>

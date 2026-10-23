@@ -105,6 +105,7 @@ export const settingsSchema = z
     transition_logo_scale: z.number().int().min(50).max(200),
     card_bg_color: hex,
     card_text_color: hex,
+    card_image_scale: z.number().int().min(50).max(150),
     footer_rate_style: z.enum(['red', 'black', 'white']),
   })
   .partial();

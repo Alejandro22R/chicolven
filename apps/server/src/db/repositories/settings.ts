@@ -29,8 +29,9 @@ export const DEFAULT_SETTINGS: Settings = {
   rate_poll_enabled: true,
   header_logo_scale: 100,
   transition_logo_scale: 100,
-  card_bg_color: '#FFFFFF',
-  card_text_color: '#0A0A0A',
+  card_bg_color: '#0A0A0A',
+  card_text_color: '#FFFFFF',
+  card_image_scale: 100,
   footer_rate_style: 'red',
 };
 

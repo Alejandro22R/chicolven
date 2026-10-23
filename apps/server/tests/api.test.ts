@@ -82,6 +82,7 @@ describe('catalog and player', () => {
       transition_logo_scale: 100,
       card_bg_color: '#0A0A0A',
       card_text_color: '#FFFFFF',
+      card_image_scale: 100,
       footer_rate_style: 'black',
     });
   });
@@ -94,6 +95,7 @@ describe('catalog and player', () => {
     expect((await call('PUT', '/api/admin/settings', { rate_daily_time: '25:00' })).status).toBe(400);
     expect((await call('PUT', '/api/admin/settings', { card_bg_color: 'black' })).status).toBe(400);
     expect((await call('PUT', '/api/admin/settings', { header_logo_scale: 500 })).status).toBe(400);
+    expect((await call('PUT', '/api/admin/settings', { card_image_scale: 10 })).status).toBe(400);
   });
 
   it('records price history', async () => {

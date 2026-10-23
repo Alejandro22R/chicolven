@@ -349,7 +349,11 @@ main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .color-input { display: flex; align-items: center; gap: 10px; }
 .color-input code { font-size: 13px; }
 .mock-card { display: flex; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); height: 170px; outline: 6px solid #0A0A0A; }
-.mock-photo { width: 42%; background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, .9), rgba(255, 255, 255, .3) 35%, transparent 62%), var(--red); }
+.mock-product { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; transition: width .15s, height .15s; }
+.mock-product span { display: block; width: 46%; height: 82%; border-radius: 26% / 14%; background: linear-gradient(180deg, #F6C2B9 0 26%, #fff 26% 62%, #D7191C 62% 72%, #F3B1A6 72%); box-shadow: 0 6px 10px rgba(0, 0, 0, .25); }
+.field-title { margin: 0 0 8px; font-weight: 650; font-size: 13px; color: #3A3A3F; }
+.range-row { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+.mock-photo { position: relative; overflow: hidden; width: 42%; background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, .9), rgba(255, 255, 255, .3) 35%, transparent 62%), var(--red); }
 .mock-info { flex: 1; display: flex; flex-direction: column; padding: 12px 0 0 14px; gap: 4px; min-width: 0; }
 .mock-unit { align-self: flex-start; background: var(--blue); color: #fff; border-radius: 99px; font-size: 9px; font-weight: 800; padding: 2px 8px; }
 .mock-info b { font-size: 19px; font-weight: 900; line-height: 1.05; flex: 1; }
