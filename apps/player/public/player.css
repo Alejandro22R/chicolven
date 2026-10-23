@@ -151,9 +151,9 @@ body {
   position: absolute; left: 50%; top: 50%; width: 200%; height: 200%; margin: -100% 0 0 -100%; opacity: .16;
   background: repeating-conic-gradient(from 0deg, #fff 0deg 10deg, transparent 10deg 20deg);
 }
-.card-media:after { /* static floor shadow under the floating product */
-  content: ""; position: absolute; left: 20%; right: 20%; bottom: 4%; height: 8%; border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, .35) 0%, rgba(0, 0, 0, 0) 70%);
+.card-shadow { /* floor shadow, placed under the real bottom of each photo by player.js */
+  position: absolute; left: 50%; bottom: 6%; width: 60%; height: 7%; margin-left: -30%; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, .38) 0%, rgba(0, 0, 0, .18) 40%, rgba(0, 0, 0, 0) 70%);
 }
 .card-photo {
   position: absolute; left: 7%; top: 7%; width: 86%; height: 86%;

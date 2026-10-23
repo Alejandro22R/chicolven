@@ -195,7 +195,7 @@
         '<div class="card-media" style="background-color:' + esc(slide.color) + '">' +
           '<div class="card-rays"></div><div class="card-glow"></div>' +
           (it.image
-            ? '<div class="card-photo" style="' + floatDelay + '"><img src="' + esc(it.image) + '" alt=""></div>'
+            ? '<div class="card-shadow"></div><div class="card-photo" style="' + floatDelay + '"><img src="' + esc(it.image) + '" alt=""></div>'
             : '<div class="ph">' + esc(initials(it.name)) + '</div>') +
           sealHtml(it) +
         '</div>' +
@@ -235,6 +235,47 @@
     for (var j = 0; j < fits.length; j++) fitText(fits[j], 0.45);
     var mains = el.querySelectorAll('.card-tag .main, .card-tag .sub, .card-tag .old, .hero-price .main, .hero-price .sub');
     for (var k = 0; k < mains.length; k++) fitWidth(mains[k], mains[k].parentNode.parentNode, 0.4);
+    var shadows = el.getElementsByClassName('card-shadow');
+    for (var m = 0; m < shadows.length; m++) placeShadow(shadows[m]);
+  }
+
+  /**
+   * Puts the floor shadow right under the visible bottom of the product photo, as wide as the
+   * product. Photos use object-fit: contain, so a tall package reaches the bottom of its box while
+   * a wide one sits in the middle: the shadow has to follow the real image, not the box.
+   */
+  function placeShadow(shadow) {
+    var photo = shadow.nextSibling;
+    var img = photo && photo.getElementsByTagName('img')[0];
+    if (!img) return;
+    if (!img.complete || !img.naturalWidth) {
+      img.onload = function () { placeShadow(shadow); };
+      return;
+    }
+    var media = shadow.parentNode;
+    var mw = media.clientWidth;
+    var mh = media.clientHeight;
+    var bw = photo.offsetWidth;
+    var bh = photo.offsetHeight;
+    if (!mw || !mh || !bw || !bh) return;
+    var scale = Math.min(bw / img.naturalWidth, bh / img.naturalHeight);
+    var iw = img.naturalWidth * scale;
+    var ih = img.naturalHeight * scale;
+    var bottom = photo.offsetTop + (bh + ih) / 2; // visible bottom edge of the product
+    var w = Math.max(iw * 0.95, mw * 0.18);
+    var h = Math.max(mh * 0.035, Math.min(w * 0.14, mh * 0.09));
+    // Hidden when the product is cut by the frame (very large size): no floor to stand on.
+    if (bottom > mh - h * 0.3) {
+      shadow.style.display = 'none';
+      return;
+    }
+    shadow.style.display = '';
+    shadow.style.width = w.toFixed(1) + 'px';
+    shadow.style.height = h.toFixed(1) + 'px';
+    shadow.style.marginLeft = (-w / 2).toFixed(1) + 'px';
+    shadow.style.left = (photo.offsetLeft + bw / 2).toFixed(1) + 'px';
+    shadow.style.top = (bottom - h * 0.45).toFixed(1) + 'px';
+    shadow.style.bottom = 'auto';
   }
 
   /** Shrinks an element's font until its content fits its own box (multi-line names). */
@@ -282,7 +323,7 @@
     if (!it) return '';
     return '<div class="hero' + (it.sold_out ? ' is-soldout' : '') + '">' +
       '<div class="hero-img" style="background-color:' + esc(slide.color) + '"><div class="card-rays"></div><div class="card-glow"></div>' +
-        (it.image ? '<div class="card-photo"><img src="' + esc(it.image) + '" alt=""></div>' : '<div class="ph">' + esc(initials(it.name)) + '</div>') +
+        (it.image ? '<div class="card-shadow"></div><div class="card-photo"><img src="' + esc(it.image) + '" alt=""></div>' : '<div class="ph">' + esc(initials(it.name)) + '</div>') +
         soldOutHtml(it) + '</div>' +
       '<div class="hero-info">' +
       (offers ? '<div class="offer-flag">¡Oferta!</div>' : '') +
@@ -563,7 +604,7 @@
     var oldOrientation = payload && payload.screen.orientation;
     var oldLow = payload && payload.screen.low_power;
     payload = data;
-    slidesKey = JSON.stringify([data.slides, data.display]);
+    slidesKey = JSON.stringify([data.slides, data.display, data.theme]);
     if (oldOrientation !== data.screen.orientation || oldLow !== data.screen.low_power) fit();
     renderChrome();
     if (slidesKey === oldKey && timer) return; // only the footer changed (e.g. rate refreshed)
