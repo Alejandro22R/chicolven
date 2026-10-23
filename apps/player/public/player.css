@@ -60,7 +60,7 @@ body {
     linear-gradient(45deg, transparent .8rem, #D7191C 0) 0 0 / 2.4rem 1.2rem repeat-x;
   background-size: 2.4rem 1.2rem;
 }
-.hdr-logo { height: 9.5rem; max-width: 36rem; -o-object-fit: contain; object-fit: contain; }
+.hdr-logo { height: 11.5rem; max-width: 50rem; -o-object-fit: contain; object-fit: contain; }
 .hdr-title { -webkit-flex: 1; flex: 1; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: 0 3rem 0 4rem; min-width: 0; }
 .hdr-bar { width: 1.2rem; height: 7rem; background: #FFD21F; margin-right: 2.4rem; border-radius: .6rem; }
 .hdr-title h1 {
@@ -193,7 +193,8 @@ body {
   clip-path: polygon(.7em 0, 100% 0, 100% 100%, 0 100%, 0 .7em);
   -webkit-animation: tagIn .7s cubic-bezier(.2, .9, .3, 1.4) backwards; animation: tagIn .7s cubic-bezier(.2, .9, .3, 1.4) backwards;
 }
-.card-tag .price { overflow: hidden; }
+.card-tag .price { overflow: visible; }
+.card-tag .main { -webkit-transform-origin: 0 60%; transform-origin: 0 60%; }
 .card-tag .main { font-size: 2.7em; line-height: 1; white-space: nowrap; color: #FFD21F; text-shadow: 0 .05em 0 rgba(0, 0, 0, .25); }
 .card-tag .sub { font-size: 1.15em; margin-top: .15em; white-space: nowrap; }
 .card-tag .old { font-size: .9em; margin-bottom: .1em; white-space: nowrap; }
@@ -372,7 +373,7 @@ body {
 .wipe.vert .wb { -webkit-transform: translateY(120%) skewY(-6deg); transform: translateY(120%) skewY(-6deg); }
 .wipe.vert.in .wb { -webkit-animation-name: wbInV; animation-name: wbInV; }
 .wipe.vert.out .wb { -webkit-animation-name: wbOutV; animation-name: wbOutV; }
-.wl { position: absolute; left: 50%; top: 50%; width: 60rem; height: 34rem; margin: -17rem 0 0 -30rem; opacity: 0;
+.wl { position: absolute; left: 50%; top: 50%; width: 100rem; height: 46rem; margin: -23rem 0 0 -50rem; opacity: 0;
   display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; }
 /* Keep the logo's own proportions (any uploaded logo: wide, square or tall) */
 .wl img { position: relative; display: block; width: auto; height: auto; max-width: 100%; max-height: 100%; }
@@ -388,15 +389,40 @@ body {
 /* ---------- Footer ---------- */
 .ftr {
   height: 9rem; -webkit-flex: 0 0 auto; flex: 0 0 auto; display: -webkit-flex; display: flex; -webkit-align-items: stretch; align-items: stretch;
-  background: #0A0A0A; border-top: .5rem solid #8DC63F; font-family: Arial, Helvetica, sans-serif; font-weight: bold;
+  background: #0A0A0A; border-top: .5rem solid #D7191C; font-family: Arial, Helvetica, sans-serif; font-weight: bold;
 }
+/* Rate box: label pill + big value + dates. Three schemes (red / black / white) chosen in the panel. */
 .ftr-rate {
-  -webkit-flex: 0 0 auto; flex: 0 0 auto; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
-  background: #2F5FD0; padding: 0 3.6rem; font-size: 3rem; white-space: nowrap;
+  position: relative; -webkit-flex: 0 0 auto; flex: 0 0 auto; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
+  padding: 0 6rem 0 3rem; white-space: nowrap; z-index: 1;
+  -webkit-clip-path: polygon(0 0, 100% 0, calc(100% - 3rem) 100%, 0 100%); clip-path: polygon(0 0, 100% 0, calc(100% - 3rem) 100%, 0 100%);
 }
-.ftr-rate b { color: #FFD21F; font-family: "Arial Black", Arial, sans-serif; font-size: 3.6rem; margin: 0 1.2rem; }
-.ftr-rate small { font-size: 2rem; opacity: .85; }
-.ftr-rate.warn { background: #7A0C10; }
+.r-label { font-size: 1.9rem; letter-spacing: .25rem; text-transform: uppercase; padding: .7rem 1.4rem; border-radius: .8rem; line-height: 1; }
+.r-val { font-family: "Arial Black", Arial, sans-serif; font-size: 5rem; line-height: 1; margin: 0 2rem; letter-spacing: -.05rem; }
+.r-val small { font-size: .5em; margin-right: .6rem; vertical-align: .55em; }
+.r-meta { font-size: 1.7rem; line-height: 1.25; text-transform: uppercase; letter-spacing: .1rem; }
+.r-meta b { display: block; }
+.r-warn { display: inline-block; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: #FFD21F; margin-left: 1rem;
+  -webkit-animation: blink 1.4s steps(2) infinite; animation: blink 1.4s steps(2) infinite; }
+
+.rs-red { background: #D7191C; color: #fff; }
+.rs-red .r-label { background: #0A0A0A; color: #fff; }
+.rs-red .r-val small { color: #0A0A0A; }
+.rs-red .r-meta { color: #fff; }
+.rs-red .r-meta b { color: #0A0A0A; }
+
+.rs-black { background: #0A0A0A; color: #fff; border-right: .6rem solid #D7191C; }
+.rs-black .r-label { background: #D7191C; color: #fff; }
+.rs-black .r-val small { color: #D7191C; }
+.rs-black .r-meta { color: #bbb; }
+.rs-black .r-meta b { color: #fff; }
+
+.rs-white { background: #fff; color: #0A0A0A; }
+.rs-white .r-label { background: #D7191C; color: #fff; }
+.rs-white .r-val small { color: #D7191C; }
+.rs-white .r-meta { color: #555; }
+.rs-white .r-meta b { color: #D7191C; }
+
 .ftr-ticker { -webkit-flex: 1; flex: 1; overflow: hidden; position: relative; }
 .ticker-track { position: absolute; top: 0; left: 0; height: 100%; white-space: nowrap; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
   -webkit-animation: ticker 40s linear infinite; animation: ticker 40s linear infinite; }
@@ -407,13 +433,16 @@ body {
 
 /* ---------- Portrait tweaks (base 1080x1920) ---------- */
 .portrait .hdr-title h1 { font-size: 5.6rem; }
-.portrait .hdr-logo { max-width: 26rem; }
+.portrait .hdr-logo { max-width: 32rem; }
 .portrait .hero { -webkit-flex-direction: column; flex-direction: column; }
 .portrait .hero-img { width: 100%; height: 50%; }
 .portrait .hero-info { padding: 4rem 0 0; text-align: center; }
 .portrait .hero-name { font-size: 8rem; }
 .portrait .menu-feature { display: none; }
-.portrait .ftr-rate { font-size: 2.4rem; padding: 0 2rem; }
+.portrait .ftr-rate { padding: 0 4rem 0 2rem; }
+.portrait .r-val { font-size: 3.8rem; margin: 0 1.2rem; }
+.portrait .r-label { font-size: 1.5rem; }
+.portrait .r-meta { font-size: 1.4rem; }
 
 /* ---------- Compositing hints ----------
  * Elements that move all the time get their own layer, so the browser only moves a texture
@@ -460,8 +489,8 @@ body {
 @keyframes raysSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 @-webkit-keyframes tagIn { from { opacity: 0; -webkit-transform: translateX(30%); } to { opacity: 1; -webkit-transform: none; } }
 @keyframes tagIn { from { opacity: 0; transform: translateX(30%); } to { opacity: 1; transform: none; } }
-@-webkit-keyframes pricePop { 0% { -webkit-transform: scale(1); } 40% { -webkit-transform: scale(1.12) rotate(-2deg); } 100% { -webkit-transform: scale(1); } }
-@keyframes pricePop { 0% { transform: scale(1); } 40% { transform: scale(1.12) rotate(-2deg); } 100% { transform: scale(1); } }
+@-webkit-keyframes pricePop { 0% { -webkit-transform: scale(1); } 40% { -webkit-transform: scale(1.1) rotate(-1deg); } 100% { -webkit-transform: scale(1); } }
+@keyframes pricePop { 0% { transform: scale(1); } 40% { transform: scale(1.1) rotate(-1deg); } 100% { transform: scale(1); } }
 @-webkit-keyframes offerPulse { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
 @keyframes offerPulse { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
 @-webkit-keyframes stampIn { from { opacity: 0; -webkit-transform: translate(-50%, -50%) rotate(-12deg) scale(2.2); } to { opacity: 1; -webkit-transform: translate(-50%, -50%) rotate(-12deg) scale(1); } }

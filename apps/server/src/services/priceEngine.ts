@@ -192,6 +192,13 @@ export function buildPlayerPayload(repos: Repos, screen: Screen, rate: RateInfo 
       logo: settings.logo_path ? `/media/${settings.logo_path}` : null,
     },
     display: { show_usd: settings.show_usd, show_bs: settings.show_bs, primary: settings.primary_currency },
+    theme: {
+      header_logo_scale: settings.header_logo_scale,
+      transition_logo_scale: settings.transition_logo_scale,
+      card_bg_color: settings.card_bg_color,
+      card_text_color: settings.card_text_color,
+      footer_rate_style: settings.footer_rate_style,
+    },
     rate,
     ticker: settings.ticker_message,
     slides,

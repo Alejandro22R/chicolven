@@ -98,5 +98,13 @@ export const settingsSchema = z
     store_open_hour: z.number().int().min(0).max(23),
     store_close_hour: z.number().int().min(1).max(24),
     bcv_insecure_tls: z.boolean(),
+    rate_daily_enabled: z.boolean(),
+    rate_daily_time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Hora inválida (use HH:MM)'),
+    rate_poll_enabled: z.boolean(),
+    header_logo_scale: z.number().int().min(50).max(200),
+    transition_logo_scale: z.number().int().min(50).max(200),
+    card_bg_color: hex,
+    card_text_color: hex,
+    footer_rate_style: z.enum(['red', 'black', 'white']),
   })
   .partial();

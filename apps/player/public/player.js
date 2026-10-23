@@ -492,23 +492,56 @@
     timer = setTimeout(next, Math.max(3, slide.duration_s) * 1000);
   }
 
+  /**
+   * Appearance settings from the panel. Written as a <style> block (no CSS variables: old TVs).
+   * Sizes are relative to the design defaults (100 %).
+   */
+  var themeKey = '';
+  function applyTheme(theme) {
+    if (!theme) return;
+    var key = JSON.stringify(theme) + (payload.screen.orientation || '');
+    if (key === themeKey) return;
+    themeKey = key;
+    var hs = Math.max(0.5, Math.min(2, theme.header_logo_scale / 100));
+    var ts = Math.max(0.5, Math.min(2, theme.transition_logo_scale / 100));
+    var portrait = payload.screen.orientation === 'portrait';
+    var logoH = 11.5 * hs;
+    var wlW = Math.min(100 * ts, portrait ? 100 : 175);
+    var wlH = Math.min(46 * ts, 80);
+    var css =
+      '.hdr{height:' + Math.max(13, logoH + 2.4).toFixed(1) + 'rem}' +
+      '.hdr-logo{height:' + logoH.toFixed(1) + 'rem;max-width:' + ((portrait ? 32 : 50) * hs).toFixed(1) + 'rem}' +
+      '.wl{width:' + wlW.toFixed(1) + 'rem;height:' + wlH.toFixed(1) + 'rem;margin:-' + (wlH / 2).toFixed(1) + 'rem 0 0 -' + (wlW / 2).toFixed(1) + 'rem}' +
+      '.card{background:' + theme.card_bg_color + ';color:' + theme.card_text_color + '}';
+    var el = $('theme');
+    if (!el) {
+      el = document.createElement('style');
+      el.id = 'theme';
+      document.getElementsByTagName('head')[0].appendChild(el);
+    }
+    el.textContent = css;
+  }
+
   function renderChrome() {
     var p = payload;
     var logo = $('logo');
     var src = logoSrc();
     if (logo.getAttribute('src') !== src) logo.setAttribute('src', src);
 
+    applyTheme(p.theme);
+
     var rateEl = $('rate');
+    rateEl.className = 'ftr-rate rs-' + ((p.theme && p.theme.footer_rate_style) || 'red');
     if (p.rate) {
       var f = new Date(new Date(p.rate.fetched_at).getTime() + CARACAS_OFFSET_MS);
       var ed = p.rate.effective_date.split('-');
-      rateEl.className = 'ftr-rate' + (p.rate.stale ? ' warn' : '');
-      rateEl.innerHTML = (p.rate.is_manual ? 'Tasa del día' : 'Tasa BCV') + ' <b>Bs ' + esc(p.rate.display) + '</b>' +
-        '<small>' + (ed.length === 3 ? 'vigente ' + ed[2] + '/' + ed[1] + ' · ' : '') +
-        'act. ' + pad(f.getUTCDate()) + '/' + pad(f.getUTCMonth() + 1) + ' ' + pad(f.getUTCHours()) + ':' + pad(f.getUTCMinutes()) + '</small>';
+      rateEl.innerHTML = '<span class="r-label">' + (p.rate.is_manual ? 'Tasa del día' : 'Tasa BCV') + '</span>' +
+        '<span class="r-val"><small>Bs</small>' + esc(p.rate.display) + '</span>' +
+        '<span class="r-meta">' + (ed.length === 3 ? '<b>Vigente ' + ed[2] + '/' + ed[1] + '</b>' : '') +
+        'Act. ' + pad(f.getUTCDate()) + '/' + pad(f.getUTCMonth() + 1) + ' ' + pad(f.getUTCHours()) + ':' + pad(f.getUTCMinutes()) + '</span>' +
+        (p.rate.stale ? '<span class="r-warn"></span>' : '');
     } else {
-      rateEl.className = 'ftr-rate warn';
-      rateEl.innerHTML = 'Precios en <b>USD</b>';
+      rateEl.innerHTML = '<span class="r-label">Precios</span><span class="r-val">USD</span>';
     }
 
     var ticker = $('ticker');

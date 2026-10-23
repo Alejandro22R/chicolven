@@ -53,6 +53,12 @@ derecha: `scripts\kiosko.bat 2 1920`.
   ofertas relámpago, banners), orientación, segundos por diapositiva y la lista de categorías,
   productos, ofertas o promociones en orden. Lista vacía = todas las categorías.
 
+## Apariencia de los TVs (desde el panel)
+
+En *Apariencia y precios*, con vista previa: tamaño del logo del encabezado y del logo de la
+transición, colores de la tarjeta de producto (blanca, negra, roja, crema o personalizada),
+estilo del recuadro de la tasa en el pie (rojo, negro o blanco), monedas, redondeo y marquesina.
+
 ## Si un TV se ve lento
 
 - El player mide su propia fluidez y, si el TV no alcanza, baja solo a **calidad media**
@@ -78,7 +84,10 @@ Reglas:
 
 - Al arrancar se usa la última tasa guardada; los TVs nunca se quedan sin precio. Sin ninguna
   tasa, muestran solo USD.
-- Se consulta cada 30 min en horario de tienda (configurable), con reintentos a los 5 min.
+- **Consulta diaria a las 8:00 p. m.** (hora de Caracas, configurable en *Apariencia y precios*):
+  si falla se reintenta cada 5 min hasta lograrlo ese día, y si el PC estaba apagado a esa hora
+  se consulta al encender.
+- Opcional: revisiones extra cada 30 min en horario de tienda (se pueden desactivar).
 - El BCV publica hacia las 4 p. m. la tasa del día hábil siguiente. Por defecto se usa la
   **tasa vigente hoy**; la de mañana se activa sola a medianoche.
 - Si una tasa nueva varía más del 15 % (configurable) se guarda como **pendiente** y no se usa

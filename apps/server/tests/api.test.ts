@@ -73,6 +73,17 @@ describe('catalog and player', () => {
     expect(tv.status).toBe(200);
     expect(tv.body.rate.display).toBe('36,50');
     expect(tv.body.slides[0].items[0]).toMatchObject({ name: 'Queso blanco', usd: '$ 5,00', bs: 'Bs 182,51' });
+
+    // Appearance settings reach the TV
+    await call('PUT', '/api/admin/settings', { card_bg_color: '#0A0A0A', card_text_color: '#FFFFFF', footer_rate_style: 'black', header_logo_scale: 140 });
+    const themed = await call('GET', `/api/player/${screen.id}`, undefined, false);
+    expect(themed.body.theme).toEqual({
+      header_logo_scale: 140,
+      transition_logo_scale: 100,
+      card_bg_color: '#0A0A0A',
+      card_text_color: '#FFFFFF',
+      footer_rate_style: 'black',
+    });
   });
 
   it('validates input', async () => {
@@ -80,6 +91,9 @@ describe('catalog and player', () => {
     expect((await call('POST', '/api/admin/products', { name: 'X', price_usd_cents: 1.5 })).status).toBe(400);
     expect((await call('POST', '/api/admin/products', { name: 'X', price_usd_cents: 100, image_path: '../../etc/passwd' })).status).toBe(400);
     expect((await call('PUT', '/api/admin/settings', { rounding_step_cents: 7 })).status).toBe(400);
+    expect((await call('PUT', '/api/admin/settings', { rate_daily_time: '25:00' })).status).toBe(400);
+    expect((await call('PUT', '/api/admin/settings', { card_bg_color: 'black' })).status).toBe(400);
+    expect((await call('PUT', '/api/admin/settings', { header_logo_scale: 500 })).status).toBe(400);
   });
 
   it('records price history', async () => {

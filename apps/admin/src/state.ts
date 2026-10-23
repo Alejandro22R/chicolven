@@ -8,10 +8,16 @@ export interface AppState {
   categories: Category[];
   screenStatus: ScreenStatus[];
   defaultPin: boolean;
+  /** Live connection to the server (WebSocket). */
+  connected: boolean;
   /** Bumped when the server reports a content change; pages refetch on it. */
   revision: number;
   reloadShared: () => Promise<void>;
-  toast: (message: string, kind?: 'ok' | 'error') => void;
+  /**
+   * A page with unsaved changes registers a check here; the menu asks before leaving.
+   * Pass null to clear it.
+   */
+  setLeaveGuard: (guard: (() => boolean) | null) => void;
 }
 
 export const AppContext = createContext<AppState>(null as unknown as AppState);

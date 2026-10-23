@@ -5,7 +5,7 @@ import { bcvProvider } from '../providers/bcvScrape.ts';
 import { dolarApiProvider } from '../providers/dolarApi.ts';
 import { jsonSourceProvider } from '../providers/jsonSource.ts';
 import { assertSaneRate, type RateProvider, type RateQuote } from '../providers/types.ts';
-import { caracasDate, caracasHour } from './time.ts';
+import { caracasDate, caracasHour, caracasMinutes } from './time.ts';
 import type { EventLog } from './eventLog.ts';
 
 export interface ProviderStatus {
@@ -34,6 +34,8 @@ export interface RateServiceOptions {
 }
 
 const RETRY_MINUTES = 5;
+/** Settings key (private) with the Caracas date of the last successful daily query. */
+const DAILY_DONE_KEY = 'rate_daily_last';
 const MAX_RETRIES = 3;
 
 export class RateService {
@@ -198,10 +200,27 @@ export class RateService {
     return rate;
   }
 
+  /** Daily query state shown in the admin panel. */
+  dailyStatus(settings = this.settings()): { enabled: boolean; time: string; last_done: string | null; next: string } {
+    const lastDone = this.repos.settings.getRaw(DAILY_DONE_KEY);
+    const today = caracasDate(this.now());
+    const doneToday = lastDone === today;
+    const passed = caracasMinutes(this.now()) >= parseHHMM(settings.rate_daily_time);
+    return {
+      enabled: settings.rate_daily_enabled,
+      time: settings.rate_daily_time,
+      last_done: lastDone,
+      next: doneToday || passed ? 'mañana' : 'hoy',
+    };
+  }
+
   /**
-   * Called every minute by the scheduler: refreshes when due (interval during store hours,
-   * faster retries after failures, immediately when there is no rate for today) and
-   * notifies when the active rate changes (e.g. at midnight when tomorrow's rate takes effect).
+   * Called every minute by the scheduler:
+   * - the daily query at the configured time (20:00 by default), retried every 5 min until it
+   *   succeeds that day; the date is persisted so a restart after 20:00 still runs it;
+   * - optional periodic checks during store hours, with faster retries after failures;
+   * - a query at start-up when there is no rate at all;
+   * - notifies when the active rate changes (e.g. at midnight when tomorrow's rate takes effect).
    */
   async tick(): Promise<void> {
     this.checkActiveChanged();
@@ -209,13 +228,28 @@ export class RateService {
     if (settings.rate_source_mode === 'manual') return;
     const now = this.now();
     const minutesSince = (now.getTime() - this.lastAttemptAt) / 60_000;
+    const today = caracasDate(now);
+
+    if (
+      settings.rate_daily_enabled &&
+      caracasMinutes(now) >= parseHHMM(settings.rate_daily_time) &&
+      this.repos.settings.getRaw(DAILY_DONE_KEY) !== today &&
+      (this.lastAttemptAt === 0 || minutesSince >= RETRY_MINUTES)
+    ) {
+      this.opts.log?.add('info', `Consulta diaria de la tasa (${settings.rate_daily_time})`);
+      const result = await this.refresh();
+      if (result.ok) this.repos.settings.setRaw(DAILY_DONE_KEY, today);
+      return;
+    }
+
     const hour = caracasHour(now);
     const open = hour >= settings.store_open_hour && hour < settings.store_close_hour;
     const active = this.activeRate(settings);
-    const missingToday = !active || active.effective_date < caracasDate(now);
+    const missingToday = !active || active.effective_date < today;
     let due = false;
     if (this.failures > 0 && this.failures <= MAX_RETRIES) due = minutesSince >= RETRY_MINUTES;
-    else if (open || missingToday) due = minutesSince >= settings.rate_fetch_minutes;
+    else if (settings.rate_poll_enabled && (open || missingToday)) due = minutesSince >= settings.rate_fetch_minutes;
+    else if (!active && this.lastAttemptAt === 0) due = true;
     if (due) await this.refresh();
   }
 
@@ -230,4 +264,10 @@ export class RateService {
       if (!first || force) this.opts.onChange?.();
     }
   }
+}
+
+/** "20:00" → 1200 minutes since midnight. */
+function parseHHMM(value: string): number {
+  const [h, m] = value.split(':').map(Number);
+  return (h ?? 0) * 60 + (m ?? 0);
 }

@@ -102,6 +102,32 @@ export interface Settings {
   store_open_hour: number;
   store_close_hour: number;
   bcv_insecure_tls: boolean;
+  /** Daily scheduled query (e.g. 20:00, after the BCV publishes the next day's rate). */
+  rate_daily_enabled: boolean;
+  /** "HH:MM", Caracas time. */
+  rate_daily_time: string;
+  /** Extra checks every `rate_fetch_minutes` during store hours. */
+  rate_poll_enabled: boolean;
+  /* --- TV appearance --- */
+  /** Header logo size, % of the default. */
+  header_logo_scale: number;
+  /** Logo size in the transition between slides, % of the default. */
+  transition_logo_scale: number;
+  /** Product card text area. */
+  card_bg_color: string;
+  card_text_color: string;
+  /** Color scheme of the rate box in the footer. */
+  footer_rate_style: FooterRateStyle;
+}
+
+export type FooterRateStyle = 'red' | 'black' | 'white';
+
+export interface PlayerTheme {
+  header_logo_scale: number;
+  transition_logo_scale: number;
+  card_bg_color: string;
+  card_text_color: string;
+  footer_rate_style: FooterRateStyle;
 }
 
 export interface CustomRateSource {
@@ -167,6 +193,7 @@ export interface PlayerPayload {
   screen: Pick<Screen, 'id' | 'name' | 'title' | 'layout' | 'orientation'> & { low_power: boolean };
   store: { name: string; rif: string; logo: string | null };
   display: { show_usd: boolean; show_bs: boolean; primary: 'usd' | 'bs' };
+  theme: PlayerTheme;
   rate: RateInfo | null;
   ticker: string;
   slides: Slide[];

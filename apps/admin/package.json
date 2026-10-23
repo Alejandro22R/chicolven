@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@chicolven/shared": "*",
-    "preact": "^10.29.0"
+    "preact": "^10.29.0",
+    "sweetalert2": "^11.26.25"
   },
   "devDependencies": {
     "vite": "^7.3.0"

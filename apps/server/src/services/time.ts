@@ -19,6 +19,13 @@ export function caracasHour(at: Date = new Date()): number {
   return Number(hourFmt.format(at));
 }
 
+const minuteFmt = new Intl.DateTimeFormat('en-GB', { timeZone: STORE.timezone, minute: '2-digit' });
+
+/** Minutes since midnight (0-1439) in Caracas. */
+export function caracasMinutes(at: Date = new Date()): number {
+  return caracasHour(at) * 60 + Number(minuteFmt.format(at));
+}
+
 /** Accepts "YYYY-MM-DD" or any ISO timestamp and returns the Caracas calendar date, or null. */
 export function toCaracasDate(value: string | null | undefined): string | null {
   if (!value) return null;

@@ -13,6 +13,8 @@ Plan completo: `docs/PLAN.md`.
 - La tasa tiene proveedores intercambiables (`apps/server/src/providers`) con respaldo manual;
   saltos mayores al % configurado quedan "pendientes" hasta que el admin los confirme.
 - Paleta: #0A0A0A, #D7191C, #7A0C10, #FFFFFF, #8DC63F, #2F5FD0, #FFD21F.
+- Panel: confirmaciones, avisos y validaciones con SweetAlert2 vía `apps/admin/src/alerts.ts`
+  (no usar `alert`/`confirm` nativos); validación de formularios con `useValidation()`.
 - Español en la interfaz; código y comentarios en inglés.
 - Ejecutar `npm test` y `npm run typecheck` antes de dar una tarea por terminada.
 

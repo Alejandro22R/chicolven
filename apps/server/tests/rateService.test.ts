@@ -136,4 +136,66 @@ describe('RateService', () => {
     await service.tick();
     expect(fetch).toHaveBeenCalledTimes(2);
   });
+
+  it('queries every day at 20:00 Caracas time and only once per day', async () => {
+    const repos = memoryRepos();
+    repos.settings.update({ rate_poll_enabled: false });
+    const fetch = vi.fn(async () => ({ source: 'bcv', rate_e4: 2000000, effective_date: null }));
+    let now = new Date('2026-10-20T15:00:00Z'); // 11:00 Caracas
+    const service = new RateService(repos, { now: () => now, providers: { bcv: { id: 'bcv', label: 'bcv', fetch } } });
+    service.setManual(1990000, '2026-10-20', null);
+
+    await service.tick();
+    expect(fetch).not.toHaveBeenCalled();
+
+    now = new Date('2026-10-20T23:59:00Z'); // 19:59
+    await service.tick();
+    expect(fetch).not.toHaveBeenCalled();
+
+    now = new Date('2026-10-21T00:00:00Z'); // 20:00
+    await service.tick();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(service.dailyStatus().last_done).toBe('2026-10-20');
+
+    now = new Date('2026-10-21T01:30:00Z'); // 21:30, already done today
+    await service.tick();
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    now = new Date('2026-10-22T00:01:00Z'); // next day 20:01
+    await service.tick();
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries the daily query every 5 minutes until it succeeds, also after a restart', async () => {
+    const repos = memoryRepos();
+    repos.settings.update({ rate_poll_enabled: false, rate_daily_time: '20:00' });
+    repos.rates.insert({ source: 'manual', rate_e4: 2000000, effective_date: '2026-10-20', fetched_at: '2026-10-20T12:00:00Z', is_manual: true, status: 'ok' });
+    let ok = false;
+    const fetch = vi.fn(async () => {
+      if (!ok) throw new Error('sin internet');
+      return { source: 'bcv', rate_e4: 2010000, effective_date: '2026-10-21' };
+    });
+    let now = new Date('2026-10-21T00:10:00Z'); // 20:10 — server started after 20:00
+    const service = new RateService(repos, { now: () => now, providers: { bcv: { id: 'bcv', label: 'bcv', fetch } } });
+    await service.tick();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    now = new Date('2026-10-21T00:12:00Z');
+    await service.tick();
+    expect(fetch).toHaveBeenCalledTimes(1); // waits 5 minutes
+    ok = true;
+    now = new Date('2026-10-21T00:15:00Z');
+    await service.tick();
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(service.dailyStatus().last_done).toBe('2026-10-20');
+  });
+
+  it('can disable the daily query', async () => {
+    const repos = memoryRepos();
+    repos.settings.update({ rate_poll_enabled: false, rate_daily_enabled: false });
+    repos.rates.insert({ source: 'manual', rate_e4: 2000000, effective_date: '2026-10-20', fetched_at: '2026-10-20T12:00:00Z', is_manual: true, status: 'ok' });
+    const fetch = vi.fn(async () => ({ source: 'bcv', rate_e4: 2000000, effective_date: null }));
+    const service = new RateService(repos, { now: () => new Date('2026-10-21T00:30:00Z'), providers: { bcv: { id: 'bcv', label: 'bcv', fetch } } });
+    await service.tick();
+    expect(fetch).not.toHaveBeenCalled();
+  });
 });

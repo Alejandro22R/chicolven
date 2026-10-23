@@ -24,6 +24,14 @@ export const DEFAULT_SETTINGS: Settings = {
   store_open_hour: 7,
   store_close_hour: 21,
   bcv_insecure_tls: true,
+  rate_daily_enabled: true,
+  rate_daily_time: '20:00',
+  rate_poll_enabled: true,
+  header_logo_scale: 100,
+  transition_logo_scale: 100,
+  card_bg_color: '#FFFFFF',
+  card_text_color: '#0A0A0A',
+  footer_rate_style: 'red',
 };
 
 /** Internal keys that are never sent to the admin panel. */

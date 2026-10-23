@@ -13,6 +13,7 @@ export async function rateRoutes(app: FastifyInstance): Promise<void> {
     pending: repos.rates.pending(),
     history: repos.rates.history(60),
     providers: rates.status(),
+    daily: rates.dailyStatus(),
   }));
 
   app.post('/api/admin/rates/refresh', async () => rates.refresh());
