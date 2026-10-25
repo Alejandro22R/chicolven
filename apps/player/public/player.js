@@ -11,6 +11,8 @@
   var screenId = match ? match[1] : '1';
   var preview = /[?&]preview=1/.test(location.search); // admin thumbnails: not counted as a connected TV
   var CACHE_KEY = 'chicolven.player.' + screenId + (preview ? '.preview' : '');
+  // The screen picker (/) reopens this screen by itself next time the TV browser starts there.
+  if (!preview) { try { localStorage.setItem('chicolven.lastScreen', screenId); } catch (e) { /* ignore */ } }
   var POLL_MS = 5 * 60 * 1000;
   var CARACAS_OFFSET_MS = -4 * 3600 * 1000; // Venezuela is UTC-4 all year
   var DAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];

@@ -40,7 +40,7 @@ export interface BuildOptions {
   rateOptions?: Omit<RateServiceOptions, 'onChange' | 'log'>;
 }
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -51,7 +51,6 @@ declare module 'fastify' {
 export async function buildApp(opts: BuildOptions): Promise<FastifyInstance> {
   const app = Fastify({
     logger: opts.logger ? { level: 'info' } : false,
-    disableRequestLogging: true,
     bodyLimit: 2 * 1024 * 1024,
   });
 
@@ -87,15 +86,11 @@ export async function buildApp(opts: BuildOptions): Promise<FastifyInstance> {
   await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024, files: 1 } });
   await app.register(websocket);
 
-  await app.register(authRoutes);
-  await app.register(catalogRoutes);
-  await app.register(screenRoutes);
-  await app.register(rateRoutes);
-  await app.register(settingsRoutes);
-  await app.register(mediaRoutes);
-  await app.register(systemRoutes);
-  await app.register(playerRoutes);
-  await app.register(staticRoutes);
+  // Requests are only logged when something goes wrong (keeps the console readable and the PC idle).
+  const quiet = { logLevel: 'warn' as const };
+  for (const routes of [authRoutes, catalogRoutes, screenRoutes, rateRoutes, settingsRoutes, mediaRoutes, systemRoutes, playerRoutes, staticRoutes]) {
+    await app.register(routes, quiet);
+  }
 
   return app;
 }

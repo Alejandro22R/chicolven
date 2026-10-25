@@ -6,40 +6,81 @@
 <title>Chicolven · Pantallas</title>
 <link rel="icon" href="/player/logo.svg">
 <style>
-  body { margin: 0; background: #0A0A0A; color: #fff; font-family: Arial, Helvetica, sans-serif; padding: 24px; }
-  img { height: 64px; }
-  h1 { font-size: 22px; color: #8DC63F; }
-  a { display: block; margin: 12px 0; padding: 18px 22px; background: #D7191C; color: #fff; text-decoration: none;
-      font-size: 22px; font-weight: bold; border-radius: 10px; max-width: 520px; }
-  a span { display: block; font-size: 14px; font-weight: normal; opacity: .85; }
-  p { color: #bbb; }
+  /* Plain CSS for old TV browsers; big targets for a TV remote (arrows + OK). */
+  body { margin: 0; background: #0A0A0A; color: #fff; font-family: Arial, Helvetica, sans-serif; padding: 4vh 5vw; }
+  .top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .logo { height: 12vh; max-height: 110px; }
+  h1 { font-size: 3.2vh; color: #8DC63F; margin: 3vh 0 2vh; font-weight: bold; }
+  #list a { display: inline-block; vertical-align: top; width: 28vw; min-width: 240px; margin: 0 2vw 2vw 0; padding: 3vh 2vw;
+    background: #D7191C; color: #fff; text-decoration: none; font-size: 3.4vh; font-weight: bold; border-radius: 14px;
+    border: 4px solid transparent; box-sizing: border-box; }
+  #list a:focus, #list a:hover { border-color: #FFD21F; outline: none; background: #B31417; }
+  #list a b { display: block; font-size: 7vh; line-height: 1; color: #FFD21F; }
+  #list a span { display: block; font-size: 2vh; font-weight: normal; opacity: .85; margin-top: 1vh; }
+  .auto { background: #1b1b1b; border-left: 6px solid #FFD21F; padding: 2vh 2vw; font-size: 2.6vh; margin-bottom: 3vh; display: none; }
+  .auto button { font-size: 2.4vh; padding: 1vh 2vw; margin-left: 2vw; border-radius: 8px; border: 0; background: #FFD21F; color: #0A0A0A; font-weight: bold; }
+  p { color: #aaa; font-size: 2.2vh; }
+  .admin { color: #888; font-size: 2vh; }
 </style>
 </head>
 <body>
-<img src="/player/logo.svg" alt="Chicolven">
+<div class="top">
+  <img class="logo" src="/player/logo.svg" alt="Chicolven">
+  <a class="admin" href="/admin/">Panel de administración</a>
+</div>
+<div class="auto" id="auto">Abriendo <b id="auto-name"></b> en <b id="auto-sec">10</b> s… <button id="auto-stop">Elegir otra</button></div>
 <h1>Elija la pantalla para este televisor</h1>
 <div id="list"><p>Cargando…</p></div>
-<p>Consejo: abra el enlace y ponga el navegador en pantalla completa (F11) o en modo kiosko.</p>
+<p>Consejo: guarde esta dirección como página de inicio del navegador del televisor. La próxima vez se abrirá sola la última pantalla elegida.</p>
 <script>
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/api/public/screens');
-  xhr.onload = function () {
-    var list = document.getElementById('list');
-    var screens = [];
-    try { screens = JSON.parse(xhr.responseText); } catch (e) {}
-    if (!screens.length) { list.innerHTML = '<p>No hay pantallas activas. Créelas en el panel de administración.</p>'; return; }
-    list.innerHTML = '';
-    for (var i = 0; i < screens.length; i++) {
-      var a = document.createElement('a');
-      a.href = '/tv/' + screens[i].id;
-      a.textContent = screens[i].name;
-      var s = document.createElement('span');
-      s.textContent = 'http://' + location.host + '/tv/' + screens[i].id;
-      a.appendChild(s);
-      list.appendChild(a);
+  (function () {
+    var timer = null;
+    function stopAuto() {
+      if (timer) clearInterval(timer);
+      timer = null;
+      document.getElementById('auto').style.display = 'none';
     }
-  };
-  xhr.send();
+    document.getElementById('auto-stop').onclick = stopAuto;
+    document.onkeydown = function (e) { if (timer && e.keyCode !== 13) stopAuto(); };
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/public/screens');
+    xhr.onload = function () {
+      var list = document.getElementById('list');
+      var screens = [];
+      try { screens = JSON.parse(xhr.responseText); } catch (e) {}
+      if (!screens.length) { list.innerHTML = '<p>No hay pantallas activas. Créelas en el panel de administración.</p>'; return; }
+      list.innerHTML = '';
+      var host = location.host;
+      for (var i = 0; i < screens.length; i++) {
+        var a = document.createElement('a');
+        a.href = '/' + screens[i].id;
+        a.innerHTML = '<b>' + screens[i].id + '</b>';
+        a.appendChild(document.createTextNode(screens[i].name));
+        var s = document.createElement('span');
+        s.textContent = 'http://' + host + '/' + screens[i].id;
+        a.appendChild(s);
+        list.appendChild(a);
+      }
+      list.getElementsByTagName('a')[0].focus();
+
+      // Reopen the last screen used on this TV.
+      var last = null;
+      try { last = localStorage.getItem('chicolven.lastScreen'); } catch (e) {}
+      var match = null;
+      for (var j = 0; j < screens.length; j++) if (String(screens[j].id) === last) match = screens[j];
+      if (!match) return;
+      var sec = 10;
+      document.getElementById('auto-name').textContent = match.name;
+      document.getElementById('auto').style.display = 'block';
+      timer = setInterval(function () {
+        sec--;
+        document.getElementById('auto-sec').textContent = sec;
+        if (sec <= 0) { clearInterval(timer); location.href = '/' + match.id; }
+      }, 1000);
+    };
+    xhr.send();
+  })();
 </script>
 </body>
 </html>

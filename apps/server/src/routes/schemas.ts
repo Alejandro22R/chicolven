@@ -13,50 +13,96 @@ const isoOrNull = z
 
 export const idParam = z.object({ id: z.coerce.number().int().positive() });
 
-export const categorySchema = z.object({
-  name: z.string().trim().min(1).max(60),
-  color: hex.default('#D7191C'),
-  icon: z.string().max(16).nullable().default(null),
-  sort_order: z.number().int().default(0),
-  active: z.boolean().default(true),
-});
+/**
+ * Each entity has a create schema (fills defaults) and an update schema (partial, no defaults).
+ * They must stay separate: zod 4 applies .default() even inside .partial(), so a shared schema
+ * would reset every untouched field on a partial update (e.g. editing only a price would wipe
+ * the photo, category and offer).
+ */
+function entity<T extends z.ZodRawShape>(fields: T, defaults: Partial<z.output<z.ZodObject<T>>>) {
+  const base = z.object(fields);
+  return {
+    create: z.preprocess((v) => (v && typeof v === 'object' && !Array.isArray(v) ? { ...defaults, ...v } : v), base),
+    update: base.partial(),
+  };
+}
 
-export const productSchema = z.object({
-  sku: z.string().trim().max(40).nullable().default(null),
-  name: z.string().trim().min(1).max(80),
-  description: z.string().trim().max(200).default(''),
-  category_id: z.number().int().positive().nullable().default(null),
-  price_usd_cents: cents,
-  unit: z.string().trim().min(1).max(20).default('kg'),
-  image_path: mediaPath.default(null),
-  badge: z.enum(['oferta', 'nuevo', 'destacado']).nullable().default(null),
-  is_offer: z.boolean().default(false),
-  offer_price_usd_cents: cents.nullable().default(null),
-  active: z.boolean().default(true),
-  sold_out: z.boolean().default(false),
-  sort_order: z.number().int().default(0),
-});
+const category = entity(
+  {
+    name: z.string().trim().min(1).max(60),
+    color: hex,
+    icon: z.string().max(16).nullable(),
+    sort_order: z.number().int(),
+    active: z.boolean(),
+  },
+  { color: '#D7191C', icon: null, sort_order: 0, active: true },
+);
+export const categorySchema = category.create;
+export const categoryPatchSchema = category.update;
 
-export const promoSchema = z.object({
-  title: z.string().trim().min(1).max(80),
-  subtitle: z.string().trim().max(160).default(''),
-  image_path: mediaPath.default(null),
-  starts_at: isoOrNull.default(null),
-  ends_at: isoOrNull.default(null),
-  active: z.boolean().default(true),
-});
+const product = entity(
+  {
+    sku: z.string().trim().max(40).nullable(),
+    name: z.string().trim().min(1).max(80),
+    description: z.string().trim().max(200),
+    category_id: z.number().int().positive().nullable(),
+    price_usd_cents: cents,
+    unit: z.string().trim().min(1).max(20),
+    image_path: mediaPath,
+    badge: z.enum(['oferta', 'nuevo', 'destacado']).nullable(),
+    is_offer: z.boolean(),
+    offer_price_usd_cents: cents.nullable(),
+    active: z.boolean(),
+    sold_out: z.boolean(),
+    sort_order: z.number().int(),
+  },
+  {
+    sku: null,
+    description: '',
+    category_id: null,
+    unit: 'kg',
+    image_path: null,
+    badge: null,
+    is_offer: false,
+    offer_price_usd_cents: null,
+    active: true,
+    sold_out: false,
+    sort_order: 0,
+  },
+);
+export const productSchema = product.create;
+export const productPatchSchema = product.update;
 
-export const screenSchema = z.object({
-  name: z.string().trim().min(1).max(60),
-  title: z.string().trim().max(60).default(''),
-  layout: z.enum(['hero', 'grid', 'menu', 'offers', 'promo']).default('grid'),
-  grid_cols: z.number().int().min(1).max(6).default(3),
-  grid_rows: z.number().int().min(1).max(12).default(2),
-  rotation_seconds: z.number().int().min(3).max(600).default(10),
-  orientation: z.enum(['landscape', 'portrait']).default('landscape'),
-  low_power: z.boolean().default(false),
-  active: z.boolean().default(true),
-});
+const promo = entity(
+  {
+    title: z.string().trim().min(1).max(80),
+    subtitle: z.string().trim().max(160),
+    image_path: mediaPath,
+    starts_at: isoOrNull,
+    ends_at: isoOrNull,
+    active: z.boolean(),
+  },
+  { subtitle: '', image_path: null, starts_at: null, ends_at: null, active: true },
+);
+export const promoSchema = promo.create;
+export const promoPatchSchema = promo.update;
+
+const screen = entity(
+  {
+    name: z.string().trim().min(1).max(60),
+    title: z.string().trim().max(60),
+    layout: z.enum(['hero', 'grid', 'menu', 'offers', 'promo']),
+    grid_cols: z.number().int().min(1).max(6),
+    grid_rows: z.number().int().min(1).max(12),
+    rotation_seconds: z.number().int().min(3).max(600),
+    orientation: z.enum(['landscape', 'portrait']),
+    low_power: z.boolean(),
+    active: z.boolean(),
+  },
+  { title: '', layout: 'grid', grid_cols: 3, grid_rows: 2, rotation_seconds: 10, orientation: 'landscape', low_power: false, active: true },
+);
+export const screenSchema = screen.create;
+export const screenPatchSchema = screen.update;
 
 export const playlistSchema = z.array(
   z.object({

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { requireAdmin } from './auth.ts';
-import { idParam, playlistSchema, screenSchema } from './schemas.ts';
+import { idParam, playlistSchema, screenPatchSchema, screenSchema } from './schemas.ts';
 
 export async function screenRoutes(app: FastifyInstance): Promise<void> {
   app.addHook('preHandler', requireAdmin);
@@ -17,7 +17,7 @@ export async function screenRoutes(app: FastifyInstance): Promise<void> {
 
   app.put('/api/admin/screens/:id', async (req, reply) => {
     const { id } = idParam.parse(req.params);
-    const screen = repos.screens.update(id, screenSchema.partial().parse(req.body));
+    const screen = repos.screens.update(id, screenPatchSchema.parse(req.body));
     if (!screen) return reply.code(404).send(notFound);
     hub.contentChanged();
     return screen;

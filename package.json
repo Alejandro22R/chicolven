@@ -1,6 +1,6 @@
 {
   "name": "chicolven-vitrina",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Cartelería digital offline-first para Chicolven C.A.",
   "type": "module",
@@ -19,7 +19,8 @@
     "seed": "npm run seed -w @chicolven/server",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p packages/shared && tsc -p apps/server && tsc -p apps/admin"
+    "typecheck": "tsc -p packages/shared && tsc -p apps/server && tsc -p apps/admin",
+    "empaquetar": "node scripts/empaquetar.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

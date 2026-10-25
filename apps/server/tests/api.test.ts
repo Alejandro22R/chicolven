@@ -98,6 +98,28 @@ describe('catalog and player', () => {
     expect((await call('PUT', '/api/admin/settings', { card_image_scale: 10 })).status).toBe(400);
   });
 
+  it('partial updates keep every field that was not sent', async () => {
+    const cat = (await call('POST', '/api/admin/categories', { name: 'Quesos', color: '#FFD21F' })).body;
+    const created = (
+      await call('POST', '/api/admin/products', {
+        name: 'Queso',
+        price_usd_cents: 500,
+        category_id: cat.id,
+        unit: '100 g',
+        is_offer: true,
+        offer_price_usd_cents: 400,
+        badge: 'nuevo',
+        sku: 'Q1',
+      })
+    ).body;
+    const updated = (await call('PUT', `/api/admin/products/${created.id}`, { price_usd_cents: 550 })).body;
+    expect(updated).toMatchObject({ category_id: cat.id, unit: '100 g', is_offer: true, offer_price_usd_cents: 400, badge: 'nuevo', sku: 'Q1', price_usd_cents: 550 });
+    const recolored = (await call('PUT', `/api/admin/categories/${cat.id}`, { sort_order: 3 })).body;
+    expect(recolored).toMatchObject({ color: '#FFD21F', sort_order: 3, active: true });
+    const scr = (await call('POST', '/api/admin/screens', { name: 'TV', layout: 'menu', grid_cols: 2, grid_rows: 7 })).body;
+    expect((await call('PUT', `/api/admin/screens/${scr.id}`, { name: 'TV 1' })).body).toMatchObject({ layout: 'menu', grid_cols: 2, grid_rows: 7 });
+  });
+
   it('records price history', async () => {
     const p = (await call('POST', '/api/admin/products', { name: 'Jamón', price_usd_cents: 1000 })).body;
     await call('PUT', `/api/admin/products/${p.id}`, { price_usd_cents: 1100 });

@@ -13,6 +13,7 @@ interface SystemInfo {
   uptime_s: number;
   memory_mb: number;
   data_dir: string;
+  network: { port: number; local_name: string; ips: string[] };
   default_pin: boolean;
   screens: ScreenStatus[];
   logs: { at: string; level: string; message: string }[];
@@ -153,6 +154,17 @@ export function System() {
               <li>
                 <span>Node.js</span>
                 <b>{info.node}</b>
+              </li>
+              <li>
+                <span>Nombre en la red</span>
+                <code>
+                  http://{info.network.local_name}
+                  {info.network.port === 80 ? '' : `:${info.network.port}`}
+                </code>
+              </li>
+              <li>
+                <span>IP de este PC</span>
+                <code>{info.network.ips.join(', ') || '—'}</code>
               </li>
               <li>
                 <span>Carpeta de datos</span>

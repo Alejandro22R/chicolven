@@ -29,3 +29,7 @@ Plan completo: `docs/PLAN.md`.
 ## Comandos
 - `npm run dev` (servidor con recarga) + `npm run dev:admin` (panel en :5173 con proxy)
 - `npm run build`, `npm start`, `npm run seed` (datos de ejemplo), `npm test`, `npm run typecheck`
+- `npm run empaquetar` (`-- --windows` desde Linux): carpeta `release/ChicolvenVitrina` con el .exe.
+  El servidor se empaqueta en CJS sin top-level await; los módulos nativos van en `node_modules/` junto al .exe.
+- Esquemas zod: crear y actualizar van separados (`entity()` en `routes/schemas.ts`); en zod 4 los
+  `.default()` se aplican dentro de `.partial()` y borrarían campos.

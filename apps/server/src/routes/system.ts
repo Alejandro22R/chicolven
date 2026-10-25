@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import fs from 'node:fs';
 import { z } from 'zod';
 import { requireAdmin } from './auth.ts';
+import { addressesFor } from '../services/localName.ts';
 
 export async function systemRoutes(app: FastifyInstance): Promise<void> {
   app.addHook('preHandler', requireAdmin);
@@ -16,6 +17,11 @@ export async function systemRoutes(app: FastifyInstance): Promise<void> {
       uptime_s: Math.round(process.uptime()),
       memory_mb: Math.round(mem.rss / 1_048_576),
       data_dir: app.ctx.config.dataDir,
+      network: {
+        port: app.ctx.config.port,
+        local_name: `${app.ctx.config.localName}.local`,
+        ips: addressesFor(),
+      },
       default_pin: auth.usingDefaultPin(),
       screens: hub.status(),
       logs: log.list().slice(0, 100),

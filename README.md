@@ -17,7 +17,46 @@ PC de la tienda ── http://IP:3000/admin/  → panel (PC o celular en el mism
 - [Node.js 20 LTS o superior](https://nodejs.org/).
 - Edge o Chrome para los televisores conectados por HDMI; o el navegador del Smart TV / TV Box.
 
-## Instalación
+## Instalación en la tienda (programa .exe)
+
+1. Copie la carpeta `ChicolvenVitrina` al PC de la tienda (por ejemplo a `C:\ChicolvenVitrina`).
+   No necesita instalar Node.js ni nada más.
+2. Doble clic en **Iniciar Chicolven.bat**. La primera vez Windows pregunta por el Firewall:
+   marque *Redes privadas* → *Permitir acceso* (si no, los televisores no se conectan).
+   Si aparece "Windows protegió su PC", pulse *Más información* → *Ejecutar de todas formas*
+   (el programa no está firmado digitalmente).
+3. Se abre el panel en `http://localhost:3000/admin/` (PIN inicial **1234**).
+4. Para que arranque solo al encender el PC: **Instalar inicio automatico.bat**.
+5. TV conectado por HDMI a ese PC: **Abrir TV en este PC.bat**.
+
+Puerto, nombre en la red y carpeta de datos se cambian en `config.ini`. Para actualizar el
+programa, reemplace todo **menos** la carpeta `data` y `config.ini`.
+
+### Crear el .exe
+
+```bash
+npm install
+npm run empaquetar               # en Windows: crea release/ChicolvenVitrina con el .exe
+npm run empaquetar -- --windows  # desde Linux/macOS: crea igualmente la versión para Windows
+```
+
+## Dirección de los televisores
+
+En vez de la IP, los televisores pueden abrir **`http://chicolven.local:3000`** (el programa se
+anuncia en la red con ese nombre, mDNS). Con el número de pantalla al final va directo:
+`http://chicolven.local:3000/1`, `/2`… Sin número aparece una página para elegir la pantalla con el
+control, y la próxima vez abre sola la última elegida (guárdela como página de inicio del navegador
+del TV).
+
+- Funciona en Android TV / Google TV, TV Box, Chrome, celulares y la mayoría de Smart TV recientes.
+  Algunos Smart TV viejos no reconocen nombres `.local`: ahí use la IP (aparece en el panel →
+  *Pantallas* y *Sistema*).
+- Reserve una IP fija para el PC en el router, así la dirección por IP tampoco cambia.
+- Con `PORT=80` en `config.ini` la dirección queda sin número: `http://chicolven.local/1`
+  (solo si ningún otro programa usa el puerto 80, por ejemplo Laragon/Apache o IIS).
+- El nombre se cambia con `NOMBRE=` en `config.ini`.
+
+## Instalación desde el código fuente
 
 ```bash
 npm install
@@ -25,20 +64,6 @@ npm run build
 npm run seed      # opcional: carga productos y pantallas de ejemplo
 npm start
 ```
-
-La consola muestra las direcciones. Abra `http://localhost:3000/admin/` e ingrese con el
-PIN **1234** (cámbielo en *Sistema*).
-
-En Windows puede usar `scripts\iniciar.bat` (compila la primera vez y reinicia el servidor si se
-cae) y `scripts\kiosko.bat 1` para abrir el TV 1 en modo kiosko. Para un segundo monitor a la
-derecha: `scripts\kiosko.bat 2 1920`.
-
-### Autoarranque en Windows
-
-1. `Win + R` → `shell:startup`.
-2. Cree accesos directos a `scripts\iniciar.bat` y a `scripts\kiosko.bat` (uno por pantalla,
-   con el número como argumento).
-3. Reserve una IP fija para el PC en el router, así las direcciones de los TVs no cambian.
 
 ## Uso diario
 
@@ -134,5 +159,5 @@ Variables de entorno: `PORT` (3000), `HOST` (0.0.0.0), `CHICOLVEN_DATA` (carpeta
 | 5. Admin | Listo: productos, categorías, pantallas con vista previa, promociones, tasa, ajustes, sistema |
 | 6. Animaciones | Listo en v1; falta medir FPS en el hardware real de la tienda |
 | 7. Robustez offline | Listo: caché del player, reconexión, respaldos diarios, registro de eventos |
-| 8. Empaquetado | Parcial: scripts de inicio y kiosko. Falta `.exe` / servicio NSSM |
+| 8. Empaquetado | Listo: `.exe` (Node SEA), inicio automático, kiosko, nombre `chicolven.local` |
 | 9. Pulido | Parcial: CSV, ajuste masivo, historial de precios y PIN listos; falta prueba en tienda |

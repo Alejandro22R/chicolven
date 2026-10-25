@@ -3,6 +3,7 @@ import type { Layout, PlaylistItem, PlaylistItemType, Product, Promo, Screen } f
 import { api } from '../api.ts';
 import { confirmAction, errorAlert, escapeHtml, notify } from '../alerts.ts';
 import { useApp } from '../state.ts';
+import { useTvAddress } from '../network.ts';
 import { Icon } from '../components/icons.tsx';
 import { Empty, Field, Modal, PageHeader, Toggle, timeAgo, useModalClose, useValidation } from '../components/ui.tsx';
 
@@ -208,7 +209,7 @@ function ScreenForm(props: { initial: Draft; screens: Screen[]; onSaved: () => v
         ? await api<Screen>(`/api/admin/screens/${id}`, { method: 'PUT', body })
         : await api<Screen>('/api/admin/screens', { body });
       await api(`/api/admin/screens/${screen.id}/playlist`, { method: 'PUT', body: items });
-      notify(id ? 'Pantalla guardada' : `Pantalla creada: abra ${location.host}/tv/${screen.id} en el televisor`);
+      notify(id ? 'Pantalla guardada' : `Pantalla creada: en el televisor abra la dirección ${screen.id}`);
       props.onSaved();
     } catch (err) {
       await errorAlert((err as Error).message, 'No se pudo guardar');
@@ -313,6 +314,7 @@ export function Screens() {
   const [screens, setScreens] = useState<Screen[]>([]);
   const [editing, setEditing] = useState<Draft | null>(null);
   const [dirty, setDirty] = useState(false);
+  const addr = useTvAddress();
   const load = () => api<{ screens: Screen[] }>('/api/admin/screens').then((r) => setScreens(r.screens));
   useEffect(() => {
     load();
@@ -335,7 +337,7 @@ export function Screens() {
   };
 
   const copyUrl = async (id: number) => {
-    const url = `http://${location.host}/tv/${id}`;
+    const url = `http://${addr.name}/${id}`;
     try {
       await navigator.clipboard.writeText(url);
       notify('Dirección copiada');
@@ -346,6 +348,18 @@ export function Screens() {
 
   return (
     <div>
+      <div class="tv-address">
+        <Icon name="wifi" size={20} />
+        <div>
+          <b>
+            Dirección para los televisores: <code>http://{addr.name}</code>
+          </b>
+          <small>
+            Agregue el número de la pantalla al final (por ejemplo <code>http://{addr.name}/1</code>). Si un televisor no abre el nombre, use la IP:{' '}
+            <code>http://{addr.ip}/1</code>
+          </small>
+        </div>
+      </div>
       <PageHeader icon="tv" title="Pantallas" description="Cada televisor abre su dirección en el navegador a pantalla completa.">
         <a class="btn" href="/tv/" target="_blank" rel="noreferrer">
           <Icon name="external" size={16} /> Lista para TVs
@@ -392,7 +406,7 @@ export function Screens() {
                     {!s.active ? ' · inactiva' : ''}
                   </small>
                   <button class="url" onClick={() => copyUrl(s.id)} title="Copiar dirección">
-                    {location.host}/tv/{s.id}
+                    {addr.name}/{s.id}
                   </button>
                   <div class="btns">
                     <button class="btn small primary" onClick={() => open({ ...s })}>

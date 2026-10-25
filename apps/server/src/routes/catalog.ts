@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { centsToInput, parseUsdToCents } from '@chicolven/shared/money';
 import { requireAdmin } from './auth.ts';
-import { categorySchema, idParam, productSchema, promoSchema } from './schemas.ts';
+import { categoryPatchSchema, categorySchema, idParam, productPatchSchema, productSchema, promoPatchSchema, promoSchema } from './schemas.ts';
 import { parseCsv, toCsv } from '../services/csv.ts';
 
 const CSV_HEADER = ['sku', 'nombre', 'categoria', 'precio_usd', 'unidad', 'oferta_usd', 'activo', 'descripcion'];
@@ -22,7 +22,7 @@ export async function catalogRoutes(app: FastifyInstance): Promise<void> {
   });
   app.put('/api/admin/categories/:id', async (req, reply) => {
     const { id } = idParam.parse(req.params);
-    const cat = repos.categories.update(id, categorySchema.partial().parse(req.body));
+    const cat = repos.categories.update(id, categoryPatchSchema.parse(req.body));
     if (!cat) return reply.code(404).send(notFound);
     changed();
     return cat;
@@ -53,7 +53,7 @@ export async function catalogRoutes(app: FastifyInstance): Promise<void> {
   });
   app.put('/api/admin/products/:id', async (req, reply) => {
     const { id } = idParam.parse(req.params);
-    const input = productSchema.partial().parse(req.body);
+    const input = productPatchSchema.parse(req.body);
     if (input.sku) {
       const other = repos.products.getBySku(input.sku);
       if (other && other.id !== id) return reply.code(409).send({ error: 'Ya existe un producto con ese código' });
@@ -172,7 +172,7 @@ export async function catalogRoutes(app: FastifyInstance): Promise<void> {
   });
   app.put('/api/admin/promos/:id', async (req, reply) => {
     const { id } = idParam.parse(req.params);
-    const promo = repos.promos.update(id, promoSchema.partial().parse(req.body));
+    const promo = repos.promos.update(id, promoPatchSchema.parse(req.body));
     if (!promo) return reply.code(404).send(notFound);
     changed();
     return promo;

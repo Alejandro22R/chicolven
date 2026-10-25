@@ -276,6 +276,11 @@ main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .swatches { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
 /* ---------- Screens ---------- */
+.tv-address { display: flex; gap: 14px; align-items: flex-start; background: #0A0A0A; color: #fff; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 18px; box-shadow: var(--shadow); }
+.tv-address > .icon-svg { color: var(--lime); margin-top: 2px; }
+.tv-address b { display: block; font-size: 15.5px; }
+.tv-address small { color: #BDB7B8; display: block; margin-top: 4px; }
+.tv-address code { background: rgba(255, 255, 255, .1); color: var(--yellow); white-space: nowrap; }
 .screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; }
 .screen-card { background: var(--panel); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid rgba(0, 0, 0, .03); }
 .screen-card.inactive { opacity: .6; }

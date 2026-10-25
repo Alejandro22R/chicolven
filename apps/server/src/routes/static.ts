@@ -28,7 +28,13 @@ export async function staticRoutes(app: FastifyInstance): Promise<void> {
     );
   }
   app.get('/admin', async (_req, reply) => reply.redirect('/admin/'));
-  app.get('/', async (_req, reply) => reply.redirect('/admin/'));
+  // The TVs only need the short address: http://chicolven.local:3000 (screen picker) or …/1 (TV 1).
+  app.get('/', async (_req, reply) => reply.sendFile('index.html'));
+  app.get('/:n', async (req, reply) => {
+    const { n } = req.params as { n: string };
+    if (!/^\d{1,3}$/.test(n)) return reply.callNotFound();
+    return reply.redirect(`/tv/${Number(n)}`);
+  });
 
   app.get('/tv', async (_req, reply) => reply.sendFile('index.html'));
   app.get('/tv/', async (_req, reply) => reply.sendFile('index.html'));
