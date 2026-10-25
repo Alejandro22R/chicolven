@@ -1,4 +1,8 @@
 // Prepended to the server bundle inside ChicolvenVitrina.exe (see empaquetar.mjs). Plain CommonJS.
+
+// Replacement for import.meta.url (see `define` in empaquetar.mjs): a valid file URL on any OS,
+// e.g. file:///C:/ChicolvenVitrina/ChicolvenVitrina.exe on Windows.
+var __chicolvenImportMetaUrl = require('url').pathToFileURL(process.execPath).href;
 (function () {
   var path = require('path');
   var fs = require('fs');

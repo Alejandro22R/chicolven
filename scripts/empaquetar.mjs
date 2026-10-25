@@ -64,10 +64,15 @@ await build({
   // Runs before anything else in the executable: catches errors while loading the native modules
   // (which happen before main() starts) and the classic mistake of running it inside the ZIP.
   banner: { js: fs.readFileSync(path.join(ROOT, 'scripts', 'sea-preamble.cjs'), 'utf8') },
-  // config.ts only uses import.meta.url when CHICOLVEN_ROOT is missing (never in the package).
-  define: { 'import.meta.url': '"file:///chicolven"' },
+  // CJS has no import.meta: point it at the .exe itself, computed at run time. It must be a real
+  // absolute file URL on the target system (some dependencies call fileURLToPath() on load, and on
+  // Windows a URL without a drive letter throws).
+  define: { 'import.meta.url': '__chicolvenImportMetaUrl' },
   logLevel: 'warning',
 });
+
+// Guard against regressions: no hard-coded file URLs may end up in the executable.
+if (/fileURLToPath\)?\("file:/.test(fs.readFileSync(serverJs, 'utf8'))) throw new Error('El paquete convierte una URL file:// fija');
 
 step('Creando el ejecutable');
 const seaConfig = path.join(WORK, 'sea-config.json');

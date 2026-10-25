@@ -40,7 +40,7 @@ export interface BuildOptions {
   rateOptions?: Omit<RateServiceOptions, 'onChange' | 'log'>;
 }
 
-export const VERSION = '0.2.1';
+export const VERSION = '0.2.2';
 
 declare module 'fastify' {
   interface FastifyInstance {
