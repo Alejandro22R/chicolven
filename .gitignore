@@ -5,3 +5,6 @@ data/
 .DS_Store
 .vite/
 release/
+
+# Program extracted inside the project for testing (contains its own data/)
+ChicolvenVitrina/
