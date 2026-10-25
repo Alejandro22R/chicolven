@@ -1,6 +1,6 @@
 {
   "name": "chicolven-vitrina",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "description": "Cartelería digital offline-first para Chicolven C.A.",
   "type": "module",
