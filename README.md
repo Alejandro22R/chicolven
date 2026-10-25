@@ -19,8 +19,8 @@ PC de la tienda ── http://IP:3000/admin/  → panel (PC o celular en el mism
 
 ## Instalación en la tienda (programa .exe)
 
-1. Copie la carpeta `ChicolvenVitrina` al PC de la tienda (por ejemplo a `C:\ChicolvenVitrina`).
-   No necesita instalar Node.js ni nada más.
+1. Descomprima `descargas/ChicolvenVitrina-0.2.0-windows-x64.zip` en el PC de la tienda (por
+   ejemplo en `C:\ChicolvenVitrina`). No necesita instalar Node.js ni nada más.
 2. Doble clic en **Iniciar Chicolven.bat**. La primera vez Windows pregunta por el Firewall:
    marque *Redes privadas* → *Permitir acceso* (si no, los televisores no se conectan).
    Si aparece "Windows protegió su PC", pulse *Más información* → *Ejecutar de todas formas*
