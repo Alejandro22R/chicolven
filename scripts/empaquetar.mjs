@@ -61,12 +61,9 @@ await build({
   format: 'cjs',
   outfile: serverJs,
   plugins: [nativeFromDisk],
-  banner: {
-    js: [
-      "process.env.CHICOLVEN_ROOT = process.env.CHICOLVEN_ROOT || require('path').dirname(process.execPath);",
-      "process.env.CHICOLVEN_PACKAGED = '1';",
-    ].join('\n'),
-  },
+  // Runs before anything else in the executable: catches errors while loading the native modules
+  // (which happen before main() starts) and the classic mistake of running it inside the ZIP.
+  banner: { js: fs.readFileSync(path.join(ROOT, 'scripts', 'sea-preamble.cjs'), 'utf8') },
   // config.ts only uses import.meta.url when CHICOLVEN_ROOT is missing (never in the package).
   define: { 'import.meta.url': '"file:///chicolven"' },
   logLevel: 'warning',
@@ -82,14 +79,9 @@ fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 fs.mkdirSync(CACHE, { recursive: true });
 fs.copyFileSync(CROSS ? await download(`https://nodejs.org/dist/${process.version}/win-x64/node.exe`, 'node.exe') : process.execPath, EXE);
-if (WIN && !CROSS) {
-  // The copied node.exe is signed; remove the signature if signtool is available (optional).
-  try {
-    execSync(`signtool remove /s "${EXE}"`, { stdio: 'ignore' });
-  } catch {
-    /* not installed: Windows shows a harmless warning about the signature */
-  }
-}
+// node.exe is signed by the Node.js project. Injecting the app breaks that signature and Windows
+// (SmartScreen / Defender) blocks executables with a corrupted signature, so remove it first.
+if (WIN) stripAuthenticode(EXE);
 const postject = path.join(ROOT, 'node_modules', 'postject', 'dist', 'cli.js');
 execFileSync(
   process.execPath,
@@ -259,4 +251,27 @@ async function download(url, name) {
   if (!res.ok) throw new Error(`No se pudo descargar ${url}: HTTP ${res.status}`);
   fs.writeFileSync(file, Buffer.from(await res.arrayBuffer()));
   return file;
+}
+
+/**
+ * Removes the Authenticode signature from a PE file (same as `signtool remove /s`): the
+ * certificate table sits at the end of the file and is referenced by the "security" data
+ * directory. Without it the .exe is simply unsigned instead of "tampered".
+ */
+function stripAuthenticode(file) {
+  const buf = fs.readFileSync(file);
+  const pe = buf.readUInt32LE(0x3c);
+  if (buf.readUInt32LE(pe) !== 0x4550) throw new Error(`${file} no es un ejecutable de Windows`);
+  const opt = pe + 24;
+  const isPE32Plus = buf.readUInt16LE(opt) === 0x20b;
+  const securityDir = opt + (isPE32Plus ? 112 : 96) + 4 * 8;
+  const offset = buf.readUInt32LE(securityDir);
+  const size = buf.readUInt32LE(securityDir + 4);
+  if (!offset || !size) return;
+  if (offset + size !== buf.length) throw new Error('La firma no está al final del ejecutable; no se puede quitar');
+  buf.writeUInt32LE(0, securityDir);
+  buf.writeUInt32LE(0, securityDir + 4);
+  buf.writeUInt32LE(0, opt + 64); // PE checksum: not required for .exe files
+  fs.writeFileSync(file, buf.subarray(0, offset));
+  console.log('  firma original de node.exe quitada (el programa queda sin firmar)');
 }

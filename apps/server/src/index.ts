@@ -5,6 +5,7 @@ import { openDatabase } from './db/index.ts';
 import { applyPendingRestore } from './services/backup.ts';
 import { startScheduler } from './services/scheduler.ts';
 import { addressesFor, LocalNameService } from './services/localName.ts';
+import fs from 'node:fs';
 import path from 'node:path';
 
 async function main(): Promise<void> {
@@ -63,10 +64,27 @@ async function main(): Promise<void> {
 
 /** Keeps the console window open long enough to read the error when started by double-click. */
 function waitAndExit(code: number): Promise<never> {
-  return new Promise(() => setTimeout(() => process.exit(code), process.env.CHICOLVEN_PACKAGED ? 15_000 : 0));
+  if (process.env.CHICOLVEN_PACKAGED) console.error('\n  Esta ventana se cerrará en 60 segundos (o presione Enter).');
+  process.stdin.once('data', () => process.exit(code));
+  return new Promise(() => setTimeout(() => process.exit(code), process.env.CHICOLVEN_PACKAGED ? 60_000 : 0));
 }
 
-main().catch((err) => {
-  console.error(err);
+main().catch(fatal);
+// The packaged .exe installs the same handler earlier (scripts/sea-preamble.cjs).
+if (!process.env.CHICOLVEN_PACKAGED) process.on('uncaughtException', fatal);
+process.on('unhandledRejection', fatal);
+
+/** Any start-up error: show it, save it to chicolven-error.log and keep the window open. */
+function fatal(err: unknown): void {
+  const text = err instanceof Error ? (err.stack ?? err.message) : String(err);
+  console.error('\n  ERROR: Chicolven Vitrina no pudo iniciar o se detuvo:\n');
+  console.error(text);
+  try {
+    const file = path.join(ROOT_DIR, 'chicolven-error.log');
+    fs.appendFileSync(file, `[${new Date().toISOString()}] ${text}\n\n`);
+    console.error(`\n  Detalle guardado en ${file}`);
+  } catch {
+    /* read-only folder */
+  }
   void waitAndExit(1);
-});
+}
